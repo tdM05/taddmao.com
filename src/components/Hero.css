@@ -29,7 +29,7 @@
   letter-spacing: -0.02em;
   margin-top: 14px;
   color: var(--ink-bright);
-  text-shadow: 0 4px 60px var(--bg);
+  text-shadow: 0 2px 30px var(--bg);
 }
 
 .hero-sub {

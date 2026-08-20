@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { timeline, threads } from "../content/timeline.js";
+import { timeline, threads, barStart, rgbParts } from "../content/timeline.js";
 import "./Timeline.css";
 
 const Model3D = lazy(() => import("./Model3D.jsx"));
@@ -91,7 +91,7 @@ function Year({ year, entries, side, index, headYRef, registry, myId }) {
         list.push({
           rowEl: row,               // absolute Y is computed live each frame
           localY: contactY ?? 0,    // contact Y within the row
-          color: threads[entries[i]?.thread]?.color || "150,205,225",
+          color: rgbParts(threads[entries[i]?.thread]?.color || "#8fa6b3"),
           flash,
         });
       });
@@ -151,13 +151,13 @@ function Year({ year, entries, side, index, headYRef, registry, myId }) {
   const entriesEl = (
     <div className="tl-entries">
       {entries.map((e, i) => {
-        const c = threads[e.thread]?.color || "150,205,225";
+        const c = threads[e.thread]?.color || "#8fa6b3";
         return (
           <div
             className="tl-entry"
             key={i}
             ref={entryRefs.current[i]}
-            style={{ transitionDelay: `${i * 90}ms`, "--tc": c }}
+            style={{ transitionDelay: `${i * 90}ms`, "--tc": rgbParts(c) }}
           >
             {e.when && <span className="tl-when mono">{e.when}</span>}
             <span className="tl-text">{e.text}</span>
@@ -173,16 +173,17 @@ function Year({ year, entries, side, index, headYRef, registry, myId }) {
       <svg className="tl-wires" ref={svgRef} width={dims.w} height={dims.h} aria-hidden="true">
         {segs.map((s, i) => {
           const midX = (s.x1 + s.x2) / 2;
-          const c = threads[entries[i]?.thread]?.color || "150,205,225";
+          const c = threads[entries[i]?.thread]?.color || "#8fa6b3";
+          const parts = rgbParts(c);
           const d = `M ${s.x1} ${s.y1} C ${midX} ${s.y1}, ${midX} ${s.y2}, ${s.x2} ${s.y2}`;
           return (
             <g key={i}>
-              <path className="tl-edge" d={d} fill="none" stroke={`rgba(${c},0.45)`} strokeWidth="1.2" />
+              <path className="tl-edge" d={d} fill="none" stroke={`rgba(${parts},0.45)`} strokeWidth="1.2" />
               {/* flash overlay — pulses along the edge on contact (CSS, scroll-independent) */}
-              <path className="tl-flash" d={d} fill="none" stroke={`rgb(${c})`} strokeWidth="1.8"
+              <path className="tl-flash" d={d} fill="none" stroke={c} strokeWidth="1.8"
                     pathLength="1" strokeDasharray="0.3 1" strokeDashoffset="1"
-                    style={{ color: `rgb(${c})`, "--flash-rgb": c }} />
-              <circle cx={s.x2} cy={s.y2} r="4" fill={`rgb(${c})`} />
+                    style={{ color: c, "--flash-rgb": parts }} />
+              <circle cx={s.x2} cy={s.y2} r="4" fill={c} />
             </g>
           );
         })}
@@ -217,7 +218,7 @@ export default function Timeline() {
   useEffect(() => {
     const wrap = wrapRef.current, fill = fillRef.current;
     if (!wrap || !fill) return;
-    const START = [150, 205, 225]; // bar colour before the first contact
+    const START = rgbParts(barStart).split(",").map((n) => parseFloat(n)); // bar colour before first contact
 
     function allContacts(wrapTop) {
       const out = [];
@@ -306,7 +307,7 @@ export default function Timeline() {
         <h2>The whole story.</h2>
         <div className="tl-legend mono">
           {Object.entries(threads).map(([k, t]) => (
-            <span key={k}><i style={{ background: `rgb(${t.color})` }} />{t.label}</span>
+            <span key={k}><i style={{ background: t.color }} />{t.label}</span>
           ))}
         </div>
       </div>

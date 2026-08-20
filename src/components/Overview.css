@@ -1,8 +1,11 @@
 .overview {
+  /* ---- OVERVIEW COLOUR KNOBS (all hex; last 2 digits = opacity) ---- */
+  --ov-bg: #131417;      /* panel background (neutral dark) */
+  --ov-glow: #ffffff00;  /* corner wash: set an 8-digit hex like #8fb3c214 for a tint, or keep 00 for none */
   padding: 14vh var(--pad-x);
   background:
-    radial-gradient(120% 60% at 85% 0%, rgba(var(--accent-line), 0.05), transparent 55%),
-    var(--bg-soft);
+    radial-gradient(120% 60% at 85% 0%, var(--ov-glow), transparent 55%),
+    var(--ov-bg);
   border-top: 1px solid var(--line-soft);
   border-bottom: 1px solid var(--line-soft);
 }
@@ -36,7 +39,7 @@
 }
 .ov-node {
   fill: var(--accent);
-  filter: drop-shadow(0 0 4px rgba(var(--accent-line), 0.6));
+  filter: drop-shadow(0 0 2px rgba(var(--accent-line), 0.35));
   animation: ov-pulse 3.2s ease-in-out infinite;
 }
 @keyframes ov-pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 0.95; } }
@@ -66,8 +69,8 @@
   display: inline-block;
   margin-top: 12px;
 }
-.ov-item a { border-bottom: 1px dashed rgba(var(--accent-line), 0.4); }
-.ov-item a:hover { text-decoration: none; border-bottom-style: solid; }
+.ov-item a { color: var(--ink-dim); border-bottom: 1px dashed var(--line); }
+.ov-item a:hover { color: var(--ink-bright); text-decoration: none; border-bottom-color: var(--ink-faint); }
 .ov-soft { color: var(--ink-faint); }
 
 /* media (per item) */
@@ -114,7 +117,7 @@
   font-weight: 500;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--ink-dim);
 }
 
 @media (max-width: 860px) {

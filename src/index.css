@@ -3,27 +3,28 @@
    Palette/type locked from the approved hero (concept 21) + timeline.
    ============================================================ */
 :root {
-  /* surface */
-  --bg: #0a0b0e;
-  --bg-soft: #0e1319;
-  --line: #223039;
-  --line-soft: #1c2530;
+  /* surface — a touch warmer/softer than pure black */
+  --bg: #0c0d10;
+  --bg-soft: #121519;
+  --line: #262d34;
+  --line-soft: #1d2329;
 
   /* ink */
-  --ink: #e8eef4;
-  --ink-bright: #f2f6fb;
-  --ink-dim: #9fb2bd;
-  --ink-faint: #5f7d8a;
+  --ink: #dfe4ea;
+  --ink-bright: #eef1f5;
+  --ink-dim: #9aa5ad;
+  --ink-faint: #64717a;
 
-  /* accent (cool blue-white) */
-  --accent: #96cde1;
-  --accent-deep: #5f9fb5;
-  --accent-line: 150, 205, 225; /* rgb parts for rgba() */
+  /* ★ TRUE GLOBAL ACCENT — one knob. Change --accent (hex), then set
+     --accent-line to the SAME colour as "r, g, b" (used by rgba glows). */
+  --accent: #a7858d;
+  --accent-deep: #7d5f66;
+  --accent-line: 167, 133, 141;
 
-  /* geometry field colors (rgb parts) */
-  --geo-line: 150, 180, 200;
-  --geo-point: 200, 224, 240;
-  --geo-arc: 120, 150, 170;
+  /* geometry hero dots/lines — "r, g, b" (used with rgba) */
+  --geo-line: 130, 150, 165;
+  --geo-point: 175, 195, 208;
+  --geo-arc: 105, 125, 138;
 
   --maxw: 960px;
   --pad-x: 7vw;
@@ -45,8 +46,8 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
+a { color: var(--ink-dim); text-decoration: none; }
+a:hover { color: var(--ink-bright); text-decoration: underline; }
 
 .mono { font-family: var(--font-mono); }
 

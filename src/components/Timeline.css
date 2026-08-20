@@ -43,25 +43,25 @@
 /* progress bar / playhead — a single fixed colour, distinct from the
    thread colours (which stay blue/green/sand on the edges). */
 .tl {
-  --bar: 226, 178, 90;   /* warm amber — the "time" colour */
+  --bar: 143, 166, 179;   /* fallback; live colour set per-frame from JS */
 }
 .tl-fill {
   position: absolute;
   left: 0; top: 0; width: 100%; height: 0;
   background: linear-gradient(rgba(var(--bar), 0.25), rgb(var(--bar)));
-  box-shadow: 0 0 10px rgba(var(--bar), 0.5);
+  box-shadow: 0 0 6px rgba(var(--bar), 0.3);
 }
-/* playhead glow at the leading tip */
+/* playhead glow at the leading tip — softer, subtler */
 .tl-fill::after {
   content: "";
   position: absolute;
-  left: 50%; bottom: -8px;
+  left: 50%; bottom: -6px;
   transform: translateX(-50%);
-  width: 26px; height: 26px;
+  width: 18px; height: 18px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgb(var(--bar)), rgba(var(--bar), 0) 70%);
+  background: radial-gradient(circle, rgba(var(--bar), 0.8), rgba(var(--bar), 0) 70%);
   filter: blur(2px);
-  opacity: 0.95;
+  opacity: 0.7;
 }
 
 /* ---- one year row ---- */
@@ -86,10 +86,10 @@
   font-size: 15px;
   font-weight: 500;
   letter-spacing: 0.08em;
-  color: rgb(var(--bar));
+  color: var(--ink-dim);            /* year is neutral — no special colour */
   background: var(--bg);
   padding: 6px 12px;
-  border: 1px solid rgba(var(--bar), 0.4);
+  border: 1px solid var(--line);
   border-radius: 999px;
   position: relative;
   z-index: 2;
@@ -236,8 +236,8 @@
 .tl-flash {
   opacity: 0;
   filter:
-    drop-shadow(0 0 4px rgb(var(--flash-rgb)))
-    drop-shadow(0 0 9px rgba(var(--flash-rgb), 0.7));
+    drop-shadow(0 0 3px rgba(var(--flash-rgb), 0.85))
+    drop-shadow(0 0 6px rgba(var(--flash-rgb), 0.4));
 }
 .tl-flash.go {
   animation: tl-flash-travel 0.95s ease-out;
