@@ -1,0 +1,41 @@
+<!DOCTYPE html><html><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>font options</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Spectral:wght@400;500;600&family=Instrument+Serif&family=Bricolage+Grotesque:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&family=Sen:wght@400;500;700&family=Hanken+Grotesk:wght@400;500;600&family=Familjen+Grotesk:wght@400;500;600&family=Syne:wght@500;600;700&family=Fraunces:ital,opsz,wght@1,9..144,500&family=IBM+Plex+Mono:wght@400;500&family=Space+Mono&family=Spline+Sans+Mono&display=swap" rel=stylesheet>
+<style>
+:root{--bg:#0c0d10;--ink:#dfe4ea;--ink2:#eef1f5;--dim:#9aa5ad;--faint:#64717a;--accent:#a7858d}
+*{margin:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);padding:40px 6vw 80px}
+h1.page{font:600 20px system-ui;color:var(--dim);margin-bottom:6px}
+p.note{color:var(--faint);font:14px system-ui;margin-bottom:30px}
+.card{border:1px solid #262d34;border-radius:14px;padding:30px 34px;margin-bottom:20px;background:#121519}
+.tag{font:500 11px 'Space Mono',monospace;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px}
+.name{font-size:clamp(40px,7vw,74px);line-height:.98;letter-spacing:-.02em;color:var(--ink2)}
+.sub{margin-top:14px;letter-spacing:.28em;text-transform:uppercase;font-size:13px;color:var(--faint)}
+.h{font-size:26px;font-weight:600;margin-top:22px;color:var(--ink2)}
+.body{margin-top:8px;font-size:16px;color:var(--dim);max-width:60ch;line-height:1.6}
+.mono{margin-top:10px;font-size:12.5px;color:var(--faint);letter-spacing:.04em}
+</style></head><body>
+<h1 class=page>Font pairings — display / body / mono</h1>
+<p class=note>Each card = a candidate scheme, shown as the hero name, a section heading, body text, and a mono label.</p>
+<div id=out></div>
+<script>
+const bodyText="I work on AI verification — knowing, with proof rather than trust, that a machine did exactly what we asked.";
+const schemes=[
+ {n:"1 · Fraunces (soft serif) + Hanken Grotesk + IBM Plex Mono", disp:"'Fraunces',serif", body:"'Hanken Grotesk',sans-serif", mono:"'IBM Plex Mono',monospace"},
+ {n:"2 · Bricolage Grotesque (everything) — characterful sans", disp:"'Bricolage Grotesque',sans-serif", body:"'Bricolage Grotesque',sans-serif", mono:"'Spline Sans Mono',monospace"},
+ {n:"3 · Newsreader (literary serif) + Sen + Space Mono", disp:"'Newsreader',serif", body:"'Sen',sans-serif", mono:"'Space Mono',monospace"},
+ {n:"4 · Instrument Serif (elegant, high-contrast) + Familjen Grotesk", disp:"'Instrument Serif',serif", body:"'Familjen Grotesk',sans-serif", mono:"'IBM Plex Mono',monospace"},
+ {n:"5 · Syne (distinctive display) + Hanken Grotesk", disp:"'Syne',sans-serif", body:"'Hanken Grotesk',sans-serif", mono:"'Space Mono',monospace"},
+ {n:"6 · Fraunces Italic display + Spectral body — bookish", disp:"italic 500 var(--x) 'Fraunces',serif", body:"'Spectral',serif", mono:"'Spline Sans Mono',monospace"},
+ {n:"7 · Space Grotesk (all) — clean technical", disp:"'Space Grotesk',sans-serif", body:"'Space Grotesk',sans-serif", mono:"'IBM Plex Mono',monospace"},
+];
+document.getElementById('out').innerHTML=schemes.map(s=>`
+<div class=card>
+ <div class=tag style="font-family:${s.mono}">${s.n}</div>
+ <div class=name style="font-family:${s.disp};${s.n.includes('Italic')?'font-style:italic':''}">Tadd Mao</div>
+ <div class=sub style="font-family:${s.mono}">AI Verification Research</div>
+ <div class=h style="font-family:${s.disp}">The whole story.</div>
+ <div class=body style="font-family:${s.body}">${bodyText}</div>
+ <div class=mono style="font-family:${s.mono}">research · 2026 · ⊢ proven ∎</div>
+</div>`).join('');
+</script></body></html>
