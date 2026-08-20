@@ -29,8 +29,9 @@
   --maxw: 960px;
   --pad-x: 7vw;
 
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-display: "Syne", system-ui, sans-serif;          /* name + headings */
+  --font-sans: "Hanken Grotesk", system-ui, -apple-system, sans-serif;  /* body */
+  --font-mono: "Space Mono", ui-monospace, monospace;     /* labels / eyebrows */
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
