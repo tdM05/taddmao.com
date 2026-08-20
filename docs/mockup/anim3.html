@@ -1,0 +1,84 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 3 · On track</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f5f2ec;color:#211f1a}
+.hero{position:relative;height:100vh;min-height:560px;background:#0f0f11;color:#f4efe7;overflow:hidden;display:flex;align-items:center}
+#c{position:absolute;inset:0;z-index:1}
+.txt{position:relative;z-index:2;padding:0 7vw;pointer-events:none;max-width:56ch}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.06em;color:#b7a98c}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(44px,8vw,88px);line-height:.96;letter-spacing:-.02em;margin-top:12px;text-shadow:0 4px 50px #0f0f11}
+.intro{font-size:18px;color:#d6cfc4;margin-top:18px;text-shadow:0 2px 30px #0f0f11}.intro b{color:#e6a9b0;font-weight:500}
+.legend{position:absolute;bottom:20px;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6e6a62}
+.legend b{color:#6fbf8f}.legend i{color:#d98b93;font-style:normal}
+</style></head><body>
+<header class=hero>
+  <canvas id=c></canvas>
+  <div class=txt>
+    <div class=eyebrow>Tadd Mao · Math &amp; CS · University of Toronto</div>
+    <h1>Keep it<br>on the rails.</h1>
+    <p class=intro>An AI agent wanders; a <b>proven safety envelope</b> keeps pulling it back. When it lurches for the edge, the guarantee catches it.</p>
+  </div>
+  <div class=legend>agent trajectory inside a <b>verified corridor</b> — edge attempts <i>caught &amp; corrected</i></div>
+</header>
+<script>
+(function(){
+const cv=document.getElementById('c'),x=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let W,H,DPR;function size(){DPR=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0);}
+size();addEventListener('resize',size);
+const mouse={x:-999,y:-999,on:false};
+addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();mouse.x=e.clientX-r.left;mouse.y=e.clientY-r.top;mouse.on=true;});
+addEventListener('pointerleave',()=>mouse.on=false);
+// corridor centerline is a gentle sine across the screen; half-width = envelope
+function center(px,t){return H*0.55 + Math.sin(px*0.006 + t*0.0006)*H*0.10 + Math.sin(px*0.013+t*0.0011)*H*0.04;}
+const HALF=70;
+// agent
+let ax=0, ay, t=0, trail=[], catches=[];
+ay=H*0.55;
+function loop(){
+  t++; x.clearRect(0,0,W,H);
+  // draw corridor envelope
+  x.lineWidth=1.5;
+  for(const s of [-1,1]){
+    x.strokeStyle='rgba(111,191,143,.35)';x.beginPath();
+    for(let px=0;px<=W;px+=8){const cy=center(px,t)+s*HALF;px===0?x.moveTo(px,cy):x.lineTo(px,cy);}x.stroke();
+  }
+  // corridor fill
+  x.beginPath();for(let px=0;px<=W;px+=8){const cy=center(px,t)-HALF;px===0?x.moveTo(px,cy):x.lineTo(px,cy);}
+  for(let px=W;px>=0;px-=8){const cy=center(px,t)+HALF;x.lineTo(px,cy);}x.closePath();
+  x.fillStyle='rgba(111,191,143,.05)';x.fill();
+  // centerline (the spec)
+  x.strokeStyle='rgba(183,169,140,.25)';x.setLineDash([2,6]);x.beginPath();
+  for(let px=0;px<=W;px+=8){const cy=center(px,t);px===0?x.moveTo(px,cy):x.lineTo(px,cy);}x.stroke();x.setLineDash([]);
+  // advance agent
+  ax+=2.2; if(ax>W){ax=0;trail=[];}
+  const c=center(ax,t);
+  // agent "wants" to wander: random walk + occasional strong lurch toward an edge
+  let wander=Math.sin(t*0.05)*0.6 + (Math.random()-.5)*3;
+  if(Math.random()<0.02) wander += (Math.random()<.5?-1:1)*22; // rogue lurch
+  // cursor can tempt it (interaction): pulls agent toward mouse y
+  if(mouse.on && Math.abs(mouse.x-ax)<160){ wander += (mouse.y-ay)*0.05; }
+  ay += wander;
+  // enforce envelope: if outside, project back and log a "catch" (⊢)
+  const lo=c-HALF+6, hi=c+HALF-6; let caught=false;
+  if(ay<lo){ay=lo;caught=true;} if(ay>hi){ay=hi;caught=true;}
+  if(caught && t%3===0) catches.push({x:ax,y:ay,t:0});
+  trail.push({x:ax,y:ay}); if(trail.length>220)trail.shift();
+  // draw trail
+  x.lineWidth=2;x.strokeStyle='rgba(230,169,176,.9)';x.beginPath();
+  trail.forEach((p,i)=>i?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y));x.stroke();
+  // agent head
+  x.fillStyle='#e6a9b0';x.beginPath();x.arc(ax,ay,4,0,7);x.fill();
+  x.strokeStyle='rgba(230,169,176,.4)';x.beginPath();x.arc(ax,ay,9,0,7);x.stroke();
+  // catch stamps
+  for(let i=catches.length-1;i>=0;i--){const k=catches[i];k.t++;const p=k.t/34;if(p>1){catches.splice(i,1);continue;}
+    x.strokeStyle='rgba(111,191,143,'+(1-p)+')';x.lineWidth=2;x.beginPath();x.arc(k.x,k.y,4+p*14,0,7);x.stroke();
+    x.fillStyle='rgba(111,191,143,'+(1-p)+')';x.font='12px monospace';x.textAlign='center';x.fillText('⊢',k.x,k.y-14);}
+  raf=requestAnimationFrame(loop);
+}
+let raf;
+if(reduce){const t0=0;for(const s of[-1,1]){x.strokeStyle='rgba(111,191,143,.35)';x.beginPath();for(let px=0;px<=W;px+=8){const cy=center(px,0)+s*HALF;px===0?x.moveTo(px,cy):x.lineTo(px,cy);}x.stroke();}x.strokeStyle='rgba(230,169,176,.8)';x.beginPath();for(let px=0;px<=W;px+=8){const cy=center(px,0);px===0?x.moveTo(px,cy):x.lineTo(px,cy);}x.stroke();}
+else raf=requestAnimationFrame(loop);
+})();
+</script></body></html>

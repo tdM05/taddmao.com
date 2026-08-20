@@ -1,0 +1,92 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 2 · Faithfulness</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f5f2ec;color:#211f1a}
+.hero{position:relative;height:100vh;min-height:560px;background:#101012;color:#f4efe7;overflow:hidden}
+#c{position:absolute;inset:0;z-index:1}
+.txt{position:absolute;z-index:3;top:12vh;left:7vw;pointer-events:none;max-width:56ch}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.06em;color:#b7a98c}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(42px,8vw,86px);line-height:.96;letter-spacing:-.02em;margin-top:12px;text-shadow:0 4px 50px #101012}
+.intro{font-size:18px;color:#d6cfc4;margin-top:18px;text-shadow:0 2px 30px #101012}.intro b{color:#e6a9b0;font-weight:500}
+.hd{position:absolute;top:9vh;z-index:3;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a8478}
+.hdL{left:9vw}.hdR{right:9vw}
+</style></head><body>
+<header class=hero>
+  <canvas id=c></canvas>
+  <div class=hd hdL style="display:none"></div>
+  <div class=txt>
+    <div class=eyebrow>Tadd Mao · Math &amp; CS · University of Toronto</div>
+    <h1>Is it <span style="font-style:italic;color:#e6a9b0">faithful?</span></h1>
+    <p class=intro>My work checks that a formal proof actually says what the informal one does — line by line, <b>correspondence by correspondence.</b></p>
+  </div>
+</header>
+<script>
+(function(){
+const cv=document.getElementById('c'),x=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let W,H,DPR;function size(){DPR=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0);build();}
+// two columns of "lines" (informal left, formal right). links between corresponding lines.
+let L=[],R=[],links=[],scan=0;
+function build(){
+  L=[];R=[];links=[];
+  const n=Math.round(Math.min(11,Math.max(6,H/70)));
+  const top=H*0.30, gap=(H*0.62)/n, lx=W*0.30, rx=W*0.70;
+  for(let i=0;i<n;i++){
+    L.push({x:lx,y:top+gap*i,w:60+Math.random()*120});
+    R.push({x:rx,y:top+gap*i,w:50+Math.random()*130});
+  }
+  // each informal line maps to a formal line; mostly aligned, a couple "drift" (unfaithful)
+  for(let i=0;i<n;i++){
+    const bad=Math.random()<0.18;
+    const j=bad? (i+ (Math.random()<.5?1:-1)+n)%n : i;
+    links.push({i,j,bad,phase:Math.random()*6});
+  }
+}
+size();addEventListener('resize',size);
+const mouse={x:-999,y:-999,on:false};
+addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();mouse.x=e.clientX-r.left;mouse.y=e.clientY-r.top;mouse.on=true;});
+addEventListener('pointerleave',()=>mouse.on=false);
+let t=0;
+function line(o,col){x.strokeStyle=col;x.lineWidth=3;x.lineCap='round';x.beginPath();x.moveTo(o.x-o.w/2,o.y);x.lineTo(o.x+o.w/2,o.y);x.stroke();}
+function loop(){
+  t++;scan+=0.006; if(scan>1)scan=0;
+  x.clearRect(0,0,W,H);
+  const scanY=H*0.28+scan*(H*0.64);
+  // column headers
+  x.fillStyle='rgba(138,132,120,.8)';x.font='11px monospace';x.textAlign='center';
+  x.fillText('INFORMAL PROOF',W*0.30,H*0.24);x.fillText('FORMAL (LEAN)',W*0.70,H*0.24);
+  // scan line
+  x.strokeStyle='rgba(230,169,176,.25)';x.lineWidth=1;x.beginPath();x.moveTo(W*0.14,scanY);x.lineTo(W*0.86,scanY);x.stroke();
+  // links
+  for(const lk of links){
+    const a=L[lk.i],b=R[lk.j]; if(!a||!b)continue;
+    const near=Math.abs((a.y+b.y)/2-scanY)<40;
+    let col, lw=1.4;
+    if(lk.bad){ // flicker red, then "self-correct" briefly to show detection
+      const flick=(Math.sin(t*0.08+lk.phase)+1)/2;
+      col='rgba(217,139,147,'+(0.3+flick*0.5)+')';
+    } else {
+      col= near? 'rgba(111,191,143,.9)':'rgba(111,191,143,.35)';
+      if(near)lw=2;
+    }
+    x.strokeStyle=col;x.lineWidth=lw;
+    x.beginPath();x.moveTo(a.x+a.w/2,a.y);
+    const mx=(a.x+b.x)/2;
+    x.bezierCurveTo(mx,a.y,mx,b.y,b.x-b.w/2,b.y);x.stroke();
+    // when scan passes a good link, stamp ⊢; bad link stamps ✗
+    if(near){x.fillStyle=lk.bad?'rgba(217,139,147,.95)':'rgba(111,191,143,.95)';x.font='13px monospace';x.textAlign='center';
+      x.fillText(lk.bad?'✗':'⊢',mx,(a.y+b.y)/2-6);}
+  }
+  // lines (brighten near scan / cursor)
+  for(const o of L.concat(R)){
+    const near=Math.abs(o.y-scanY)<40 || (mouse.on&&Math.abs(o.y-mouse.y)<24);
+    line(o, near?'rgba(244,239,231,.95)':'rgba(244,239,231,.4)');
+  }
+  raf=requestAnimationFrame(loop);
+}
+let raf;
+if(reduce){for(const o of L.concat(R))line(o,'rgba(244,239,231,.5)');for(const lk of links){const a=L[lk.i],b=R[lk.j];if(a&&b){x.strokeStyle=lk.bad?'rgba(217,139,147,.6)':'rgba(111,191,143,.6)';x.lineWidth=1.4;const mx=(a.x+b.x)/2;x.beginPath();x.moveTo(a.x+a.w/2,a.y);x.bezierCurveTo(mx,a.y,mx,b.y,b.x-b.w/2,b.y);x.stroke();}}}
+else raf=requestAnimationFrame(loop);
+})();
+</script></body></html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tadd Mao — design mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --paper: #f7f5f0;      /* warm paper */
+    --paper-line: #e4dfd4;
+    --muted: #6b6b6b;
+    --accent: #7a1e28;     /* oxblood — matches the CV */
+    --verified: #3d6b4f;   /* muted 'verified' green */
+    --hero-bg: #161616;
+    --hero-ink: #f4efe7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  code, .mono { font-family: 'JetBrains Mono', monospace; }
+  .serif { font-family: 'Fraunces', Georgia, serif; }
+
+  /* ---------- top nav ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 7vw;
+    background: rgba(22,22,22,0.92);
+    backdrop-filter: blur(6px);
+    color: var(--hero-ink);
+    font-size: 14px;
+  }
+  nav .brand { font-family: 'Fraunces', serif; font-weight: 600; letter-spacing: 0.02em; }
+  nav .links a { color: var(--hero-ink); text-decoration: none; margin-left: 22px; opacity: 0.8; transition: opacity .2s; }
+  nav .links a:hover { opacity: 1; }
+  nav .links a.cv { color: var(--paper); border: 1px solid rgba(244,239,231,0.4); padding: 4px 12px; border-radius: 4px; }
+
+  /* ---------- hero ---------- */
+  .hero {
+    background: var(--hero-bg);
+    color: var(--hero-ink);
+    padding: 12vh 7vw 14vh;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; letter-spacing: 0.08em;
+    color: #9a8; opacity: 0.85; margin-bottom: 26px;
+  }
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(38px, 6vw, 78px);
+    line-height: 1.04;
+    letter-spacing: -0.01em;
+    max-width: 16ch;
+    margin-bottom: 28px;
+  }
+  .hero h1 .accent { color: #d98b93; font-style: italic; }
+  .hero .sub {
+    font-size: clamp(16px, 1.6vw, 20px);
+    max-width: 56ch; color: #cfc8bd; margin-bottom: 40px;
+  }
+  .hero .actions a {
+    display: inline-block; margin-right: 14px;
+    font-size: 15px; text-decoration: none;
+    padding: 11px 20px; border-radius: 5px;
+  }
+  .hero .actions .primary { background: var(--paper); color: var(--ink); font-weight: 600; }
+  .hero .actions .ghost { color: var(--hero-ink); border: 1px solid rgba(244,239,231,0.35); }
+  .hero .whoami {
+    position: absolute; right: 7vw; top: 12vh;
+    width: 150px; height: 150px; border-radius: 50%;
+    background: #2a2a2a center/cover;
+    border: 1px solid rgba(244,239,231,0.2);
+    display: flex; align-items: center; justify-content: center;
+    color: #555; font-size: 12px; text-align:center;
+  }
+
+  /* ---------- section shell ---------- */
+  section.body { padding: 8vh 7vw; max-width: 1000px; margin: 0 auto; }
+  .sec-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 8px;
+  }
+  .sec-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: clamp(24px,3vw,34px); margin-bottom: 24px; }
+  .lead { font-size: 19px; max-width: 62ch; color: #333; }
+  .lead .em { color: var(--accent); font-style: italic; }
+  hr.rule { border: none; border-top: 1px solid var(--paper-line); margin: 0 7vw; }
+
+  /* ---------- the "claim → proof" motif ---------- */
+  .claim {
+    display: grid; grid-template-columns: 22px 1fr; gap: 12px;
+    padding: 18px 0; border-bottom: 1px solid var(--paper-line);
+    align-items: start;
+  }
+  .claim .mark {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--verified); font-size: 17px; line-height: 1.5; user-select: none;
+  }
+  .claim h3 { font-size: 17px; font-weight: 600; margin-bottom: 3px; }
+  .claim p { font-size: 15px; color: #444; margin-bottom: 6px; }
+  .claim .evidence {
+    font-family: 'JetBrains Mono', monospace; font-size: 12.5px;
+    color: var(--accent); text-decoration: none;
+    border-bottom: 1px dashed rgba(122,30,40,0.4); padding-bottom: 1px;
+  }
+  .claim .evidence::before { content: "→ verify: "; color: var(--muted); }
+  .claim .evidence:hover { background: rgba(122,30,40,0.06); }
+
+  /* ---------- beyond research doorways ---------- */
+  .doorways { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-top: 12px; }
+  .door {
+    border: 1px solid var(--paper-line); border-radius: 8px; padding: 22px;
+    text-decoration: none; color: var(--ink); background: #fff;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .door:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+  .door .k { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; }
+  .door h4 { font-family:'Fraunces',serif; font-size:20px; margin:6px 0 6px; }
+  .door p { font-size:13.5px; color:#555; }
+
+  footer { background: var(--hero-bg); color: #cfc8bd; padding: 6vh 7vw; font-size: 14px; }
+  footer a { color: #d98b93; text-decoration: none; }
+  .note { max-width:1000px; margin: 4vh auto 0; padding: 0 7vw; font-size:12.5px; color:var(--muted); font-style:italic;}
+  @media (max-width:700px){ .doorways{grid-template-columns:1fr;} .hero .whoami{display:none;} }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">Tadd Mao</span>
+  <span class="links">
+    <a href="#research">Research</a>
+    <a href="#work">Work</a>
+    <a href="#beyond">Beyond</a>
+    <a class="cv" href="#">CV ↓</a>
+  </span>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="whoami">[ headshot ]</div>
+  <div class="eyebrow">Mathematics &amp; Computer Science · University of Toronto</div>
+  <h1>I don't trust&nbsp;AI.<br>I work on how we <span class="accent">could</span>.</h1>
+  <p class="sub">
+    I'm an undergraduate researcher in <strong>AI verification</strong> — building
+    ways to know, with formal certainty rather than statistical confidence, that a
+    machine did exactly what we asked. Everything below comes with something you can
+    check for yourself.
+  </p>
+  <div class="actions">
+    <a class="primary" href="#research">See the research →</a>
+    <a class="ghost" href="#">Download CV</a>
+  </div>
+</header>
+
+<!-- ================= RESEARCH ================= -->
+<section class="body" id="research">
+  <div class="sec-label">Research</div>
+  <h2 class="sec-title">Verify, don't trust.</h2>
+  <p class="lead">
+    AI today is confidently — and unaccountably — wrong. As it moves into
+    safety-critical work, <span class="em">“we're fairly sure it's fine”</span> stops
+    being good enough. My work asks a sharper question: can we know, with a formal
+    guarantee, that an AI system did exactly what we asked? I approach it through
+    <strong>faithful formalization</strong> and formal verification of machine
+    reasoning — so trust rests on a checker we can prove correct, not on the model.
+  </p>
+</section>
+
+<hr class="rule" />
+
+<!-- ================= SELECTED WORK (claim -> proof) ================= -->
+<section class="body" id="work">
+  <div class="sec-label">Selected work</div>
+  <h2 class="sec-title">Each claim, with its receipt.</h2>
+
+  <div class="claim">
+    <span class="mark">⊢</span>
+    <div>
+      <h3>First-authored an AAAI-27 submission on faithful formalization</h3>
+      <p><em>Does the Proof Prove It That Way?</em> — five necessary conditions for
+      proof-faithfulness, and a method judged more faithful than the prior state of the art.</p>
+      <a class="evidence" href="https://arxiv.org/abs/2608.15432">arXiv:2608.15432</a>
+    </div>
+  </div>
+
+  <div class="claim">
+    <span class="mark">⊢</span>
+    <div>
+      <h3>Merged a proof into Mathlib, Lean's core library</h3>
+      <p>Wrote <code>Int.closure_eq_zmultiples</code> independently; refined it through community review.</p>
+      <a class="evidence" href="https://github.com/leanprover-community/mathlib4/pull/39435">mathlib4 PR #39435</a>
+    </div>
+  </div>
+
+  <div class="claim">
+    <span class="mark">⊢</span>
+    <div>
+      <h3>Building the first complete formalization of Euclid's <em>Elements</em> in Lean</h3>
+      <p>Extending Avigad et al.'s System E with a new axiom set (NSERC USRA, with Prof. Xujie Si).</p>
+      <a class="evidence" href="#">work in progress</a>
+    </div>
+  </div>
+</section>
+
+<hr class="rule" />
+
+<!-- ================= BEYOND ================= -->
+<section class="body" id="beyond">
+  <div class="sec-label">Beyond research</div>
+  <h2 class="sec-title">Also a pianist, violinist, and artist.</h2>
+  <p class="lead" style="margin-bottom:26px;">Same rule — the claims link to the proof.</p>
+  <div class="doorways">
+    <a class="door" href="#">
+      <div class="k">Music</div>
+      <h4>Piano &amp; violin</h4>
+      <p>Rachmaninoff No. 2 with orchestra; provincial concerto finalist. → watch</p>
+    </a>
+    <a class="door" href="#">
+      <div class="k">Art</div>
+      <h4>Sketches &amp; 3D</h4>
+      <p>Traditional charcoal, digital painting, and interactive 3D models. → view</p>
+    </a>
+    <a class="door" href="#">
+      <div class="k">Apps</div>
+      <h4>Things I built</h4>
+      <p>Dr. Mario in MIPS, a 3D museum in Unreal, more. → explore</p>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <strong class="serif">Tadd Mao</strong><br />
+  taddmao [at] gmail [dot] com · <a href="https://github.com/tdM05">github.com/tdM05</a> · <a href="#">CV</a>
+</footer>
+
+<p class="note">Mockup — concept only. Fonts: Fraunces (display serif) + Inter (body) + JetBrains Mono (the "verify" evidence type). Palette: dark hero, warm-paper body, oxblood accent (matches CV), muted green ⊢ verification marks. Not final content.</p>
+
+</body>
+</html>

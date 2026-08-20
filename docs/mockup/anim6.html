@@ -1,0 +1,97 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 6 · Minimal axioms</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{margin:0;background:#0f0f11;color:#f4efe7;font-family:'Inter',sans-serif;overflow:hidden}
+.stage{position:relative;height:100vh;min-height:560px}
+#c{position:absolute;inset:0}
+.corner{position:absolute;top:5vh;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:12px;color:#8a8478;letter-spacing:.06em}
+.corner b{color:#f4efe7;font-weight:500}
+.phase{position:absolute;bottom:6vh;left:0;right:0;text-align:center;z-index:2;font-family:'JetBrains Mono',monospace;font-size:13px;color:#c9a96a;letter-spacing:.1em;transition:opacity .5s}
+.count{position:absolute;top:5vh;right:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:12px;color:#8a8478}
+.count b{color:#c9a96a}
+</style></head><body>
+<div class=stage>
+  <canvas id=c></canvas>
+  <div class=corner><b>Tadd Mao</b> · axiom design · University of Toronto</div>
+  <div class=count id=count></div>
+  <div class=phase id=phase></div>
+</div>
+<script>
+(function(){
+const cv=document.getElementById('c'),x=cv.getContext('2d'),phaseEl=document.getElementById('phase'),countEl=document.getElementById('count');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let W,H,DPR,cx,cy,Rad;
+function size(){DPR=Math.min(devicePixelRatio||1,2);W=cv.clientWidth=cv.parentElement.clientWidth;H=cv.clientHeight=cv.parentElement.clientHeight;cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0);cx=W/2;cy=H/2;Rad=Math.min(W,H)*0.32;build();}
+// full theory = many points on concentric rings; a minimal subset are the "axioms" (gold),
+// everything else is derivable (light). We show: full set -> collapse to axioms -> regenerate.
+let all=[],axioms=[];
+function build(){
+  all=[];axioms=[];
+  const rings=[{r:Rad*0.42,n:6},{r:Rad*0.74,n:12},{r:Rad,n:18}];
+  let id=0;
+  rings.forEach((rg,ri)=>{for(let i=0;i<rg.n;i++){const a=(i/rg.n)*Math.PI*2 + ri*0.3;
+    all.push({id:id++,ring:ri,ang:a,r:rg.r,x:cx+Math.cos(a)*rg.r,y:cy+Math.sin(a)*rg.r,alpha:1,axiom:false});}});
+  // choose a small generating set: 3 inner + a couple mid = minimal core
+  const pick=[0,2,4, 8, 14];
+  pick.forEach(k=>{if(all[k]){all[k].axiom=true;axioms.push(all[k]);}});
+}
+size();addEventListener('resize',size);
+const dur={show:1400,collapse:1700,hold:900,regen:1900,rest:1300};
+let phase='show',t0=performance.now?performance.now():0,tprev=0;
+function setPhase(p){phase=p;t0=now;
+  phaseEl.style.opacity=1;
+  phaseEl.textContent = p==='show'?'a complete theory':
+    p==='collapse'?'reduce to the fewest assumptions that still suffice':
+    p==='hold'?'⬥ the minimal axioms':
+    p==='regen'?'everything else follows':'';
+}
+let now=0;
+function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+function draw(ts){
+  now=ts; const el=now-t0;
+  x.clearRect(0,0,W,H);
+  // edges from each derived node to nearest axiom (shown during regen/show)
+  let regenK = phase==='regen'? ease(Math.min(1,el/dur.regen)) : (phase==='show'||phase==='rest'?1:0);
+  // during collapse, derived nodes fade & fly toward center-ish
+  let colK = phase==='collapse'? ease(Math.min(1,el/dur.collapse)) : (phase==='hold'?1:0);
+  // draw derivation edges
+  for(const n of all){ if(n.axiom)continue;
+    // find nearest axiom
+    let best=axioms[0],bd=1e9;for(const a of axioms){const d=(a.x-n.x)**2+(a.y-n.y)**2;if(d<bd){bd=d;best=a;}}
+    let vis = phase==='regen'? regenK : (phase==='show'||phase==='rest'?1: (phase==='collapse'?1-colK:0));
+    if(vis>0.01 && best){x.strokeStyle='rgba(201,169,106,'+0.12*vis+')';x.lineWidth=1;x.beginPath();x.moveTo(best.x,best.y);x.lineTo(n.x,n.y);x.stroke();}
+  }
+  // nodes
+  let shown=0;
+  for(const n of all){
+    let a=1;
+    if(phase==='show')a=ease(Math.min(1,el/dur.show))*(n.axiom?1:1);
+    else if(phase==='collapse')a=n.axiom?1:(1-colK);
+    else if(phase==='hold')a=n.axiom?1:0;
+    else if(phase==='regen')a=n.axiom?1:regenK;
+    else a=1;
+    if(a<=0.02)continue;
+    if(!n.axiom)shown++;
+    if(n.axiom){shown++; x.save();x.translate(n.x,n.y);x.rotate(Math.PI/4);
+      x.fillStyle='rgba(201,169,106,'+a+')';x.fillRect(-5,-5,10,10);x.restore();
+      x.strokeStyle='rgba(201,169,106,'+0.35*a+')';x.beginPath();x.arc(n.x,n.y,11+ (phase==='hold'?2*Math.sin(now*0.004):0),0,7);x.stroke();
+    } else { x.fillStyle='rgba(244,239,231,'+0.7*a+')';x.beginPath();x.arc(n.x,n.y,2.6,0,7);x.fill(); }
+  }
+  countEl.innerHTML = (phase==='hold'||phase==='collapse')
+    ? 'axioms: <b>'+axioms.length+'</b> / '+all.length
+    : 'theory: <b>'+all.length+'</b> statements';
+  // advance phases
+  const seq={show:'collapse',collapse:'hold',hold:'regen',regen:'rest',rest:'show'};
+  if(el>dur[phase]){ if(phase==='rest')build(); setPhase(seq[phase]); }
+  raf=requestAnimationFrame(draw);
+}
+let raf;
+if(reduce){ // static: show axioms highlighted within full set
+  for(const n of all){if(n.axiom){let best=axioms[0],bd=1e9;} }
+  for(const n of all){if(!n.axiom){let best=axioms[0],bd=1e9;for(const a of axioms){const d=(a.x-n.x)**2+(a.y-n.y)**2;if(d<bd){bd=d;best=a;}}x.strokeStyle='rgba(201,169,106,.12)';x.beginPath();x.moveTo(best.x,best.y);x.lineTo(n.x,n.y);x.stroke();x.fillStyle='rgba(244,239,231,.6)';x.beginPath();x.arc(n.x,n.y,2.6,0,7);x.fill();}}
+  for(const a of axioms){x.save();x.translate(a.x,a.y);x.rotate(Math.PI/4);x.fillStyle='#c9a96a';x.fillRect(-5,-5,10,10);x.restore();}
+  phaseEl.textContent='⬥ minimal axioms generate the whole theory';countEl.innerHTML='axioms: <b>'+axioms.length+'</b> / '+all.length;
+} else { t0=performance.now();setPhase('show');raf=requestAnimationFrame(draw); }
+})();
+</script></body></html>

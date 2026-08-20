@@ -1,0 +1,115 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 11 · Pristine / disfigured</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{margin:0;background:#0b0b0d;overflow:hidden}
+#c{position:fixed;inset:0;display:block;cursor:crosshair}
+.hint{position:fixed;bottom:5vh;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:11px;color:#3f3d38;letter-spacing:.06em}
+</style></head><body>
+<canvas id=c></canvas>
+<div class=hint>◦ look closely</div>
+<script>
+(function(){
+const cv=document.getElementById('c'),x=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let W,H,DPR, off, octx;   // offscreen pristine render
+const mouse={x:-9999,y:-9999,in:false};
+function layoutFonts(cb){ if(document.fonts&&document.fonts.ready){document.fonts.ready.then(cb);} else cb(); }
+function build(){
+  DPR=Math.min(devicePixelRatio||1,2);
+  W=innerWidth;H=innerHeight;
+  cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';x.setTransform(DPR,0,0,DPR,0,0);
+  off=document.createElement('canvas');off.width=W*DPR;off.height=H*DPR;octx=off.getContext('2d');octx.setTransform(DPR,0,0,DPR,0,0);
+  renderPristine();
+}
+function renderPristine(){
+  octx.clearRect(0,0,W,H);
+  const lx=W*0.07;
+  // eyebrow
+  octx.fillStyle='#9a9488';octx.textBaseline='alphabetic';
+  octx.font="500 13px 'JetBrains Mono', monospace";octx.textAlign='left';
+  octx.fillText('TADD MAO · MATH & CS · UNIVERSITY OF TORONTO', lx, H*0.34);
+  // name
+  const fs=Math.min(W*0.13,150);
+  octx.font="600 "+fs+"px 'Fraunces', Georgia, serif";octx.fillStyle='#f4efe7';
+  octx.fillText('Tadd Mao', lx-2, H*0.5);
+  // tagline (two lines)
+  octx.font="400 "+Math.min(W*0.026,26)+"px 'Inter', sans-serif";octx.fillStyle='#d6cfc4';
+  octx.fillText('Powered by AI.', lx, H*0.5+fs*0.55);
+  octx.fillText('Only as good as its verification.', lx, H*0.5+fs*0.55+34);
+}
+build();                                   // build immediately (fallback fonts ok)
+layoutFonts(()=>renderPristine());         // re-render crisp once webfonts load
+addEventListener('resize',build);
+addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;mouse.in=true;});
+addEventListener('pointerleave',()=>mouse.in=false);
+const LENS=150;
+// deterministic per-x "how wrong is it here" so disfigurement is spatial, not random noise
+function sev(px){return (Math.sin(px*0.008)*0.5+0.5)*0.6+0.4;}
+let t=0;
+function drawPristineBG(){
+  // near-black with an extremely subtle warm 'too-perfect' vignette that breathes
+  const g=x.createRadialGradient(W*0.5,H*0.5,0,W*0.5,H*0.5,Math.max(W,H)*0.7);
+  const b=0.5+0.5*Math.sin(t*0.005);
+  g.addColorStop(0,'rgba(26,24,22,'+(0.9)+')');
+  g.addColorStop(1,'#0b0b0d');
+  x.fillStyle='#0b0b0d';x.fillRect(0,0,W,H);
+  x.fillStyle=g;x.fillRect(0,0,W,H);
+  // faint pristine grain sheen (very subtle)
+  x.globalAlpha=0.04+0.02*b;x.fillStyle='#fff';
+  for(let i=0;i<40;i++){const px=(t*0.2+i*97)%W;x.fillRect(px,(i*53)%H,1,1);}
+  x.globalAlpha=1;
+}
+function frame(){
+  t++;
+  drawPristineBG();
+  // 1) draw the pristine content as-is
+  x.drawImage(off,0,0,W*DPR,H*DPR,0,0,W,H);
+  // 2) within the lens, RE-DRAW the same content disfigured (melting the real letters)
+  if(mouse.in && !reduce){
+    const R=LENS, mx=mouse.x,my=mouse.y;
+    x.save();
+    x.beginPath();x.arc(mx,my,R,0,6.28);x.clip();
+    // paint over the pristine content inside lens with background first (erase), then melted copy
+    drawPristineBG();
+    const box={l:Math.max(0,mx-R),t:Math.max(0,my-R),r:Math.min(W,mx+R),b:Math.min(H,my+R)};
+    const step=2;
+    for(let cx=box.l;cx<box.r;cx+=step){
+      const dx=cx-mx;
+      const colInLens=Math.sqrt(Math.max(0,R*R-dx*dx)); // vertical half-chord
+      const s=sev(cx);
+      // melt: vertical drip + stretch, worse near center of lens
+      const prox=1-Math.abs(dx)/R;
+      const drip=(6+Math.sin(cx*0.05+t*0.06)*4)*s*prox*2.2;
+      const stretch=1+ s*prox*0.6;
+      const jitterX=(Math.sin(cx*0.3+t*0.1)* s*prox)*3;
+      // chromatic split
+      const off1=2*s*prox;
+      // red channel
+      x.globalCompositeOperation='lighter';
+      x.globalAlpha=0.9;
+      x.drawImage(off, (cx+off1)*DPR,0, step*DPR, H*DPR,  cx+jitterX, drip*0.6, step, H*stretch);
+      // main (sickly tint via drawing then overlay)
+      x.globalCompositeOperation='source-over';x.globalAlpha=1;
+      x.drawImage(off, cx*DPR,0, step*DPR, H*DPR,  cx+jitterX, drip, step, H*stretch);
+    }
+    // sickly overlay + void flecks inside lens, scaled by severity
+    x.globalCompositeOperation='source-atop';
+    x.fillStyle='rgba(150,20,28,0.28)';x.fillRect(box.l,box.t,box.r-box.l,box.b-box.t);
+    x.globalCompositeOperation='source-over';
+    for(let i=0;i<70;i++){const a=Math.random()*6.28,rr=Math.random()*R; const px=mx+Math.cos(a)*rr,py=my+Math.sin(a)*rr;
+      const s=sev(px)*(1-rr/R);
+      if(Math.random()<s){x.fillStyle='rgba(0,0,0,'+(0.5*s)+')';x.fillRect(px,py,2+3*s,2+3*s);}}
+    x.restore();
+    // lens ring
+    x.strokeStyle='rgba(230,169,176,.55)';x.lineWidth=1;x.beginPath();x.arc(mx,my,R,0,6.28);x.stroke();
+    x.setLineDash([3,7]);x.strokeStyle='rgba(230,169,176,.22)';x.beginPath();x.arc(mx,my,R*(0.55+0.45*Math.abs(Math.sin(t*0.03))),0,6.28);x.stroke();x.setLineDash([]);
+    x.fillStyle='rgba(230,169,176,.6)';x.font="10px 'JetBrains Mono',monospace";x.fillText('verify',mx+R-42,my-R+16);
+  }
+  raf=requestAnimationFrame(frame);
+}
+let raf;
+if(reduce){ drawPristineBG(); x.drawImage(off,0,0,W*DPR,H*DPR,0,0,W,H); }
+else raf=requestAnimationFrame(frame);
+})();
+</script></body></html>

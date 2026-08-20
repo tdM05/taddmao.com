@@ -1,0 +1,118 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 10 · AI blooms / verify reveals</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{margin:0;background:#0a0a0c;color:#f4efe7;font-family:'Inter',sans-serif;overflow:hidden}
+.hero{position:relative;height:100vh;min-height:560px}
+#bg{position:absolute;inset:0;z-index:1}         /* generative bloom + reveal */
+.txt{position:absolute;z-index:3;left:7vw;top:50%;transform:translateY(-50%);pointer-events:none;mix-blend-mode:normal}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.1em;color:#9a9488}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(50px,10vw,120px);line-height:.92;letter-spacing:-.02em;margin:12px 0 0}
+.tag{font-size:clamp(18px,2.2vw,24px);color:#d6cfc4;margin-top:24px;max-width:34ch}
+/* the two live words */
+.kw{position:relative;font-weight:600}
+.kw.ai{color:#ffd9a0}
+.kw.ai::after{content:"";position:absolute;left:50%;top:50%;width:8px;height:8px;border-radius:50%;background:#ffd9a0;filter:blur(6px);transform:translate(-50%,-50%);opacity:.0;animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.9;width:26px;height:26px}}
+.kw.ver{color:#e6a9b0;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:5px}
+.hint{position:absolute;bottom:5vh;left:7vw;z-index:3;font-family:'JetBrains Mono',monospace;font-size:11px;color:#46443e;letter-spacing:.06em}
+</style></head><body>
+<div class=hero>
+  <canvas id=bg></canvas>
+  <div class=txt>
+    <div class=eyebrow>Tadd Mao · Math &amp; CS · University of Toronto</div>
+    <h1>Tadd Mao</h1>
+    <p class=tag>Powered by <span class="kw ai" id=ai>AI</span>. Only as good as its <span class="kw ver" id=ver>verification</span>.</p>
+  </div>
+  <div class=hint>◦ look closely</div>
+</div>
+<script>
+(function(){
+const cv=document.getElementById('bg'),x=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let W,H,DPR, aiPt={x:0,y:0};
+function place(){const el=document.getElementById('ai').getBoundingClientRect();aiPt.x=el.left+el.width/2;aiPt.y=el.top+el.height/2;}
+// blooms: elegant growing organisms that emanate from the AI word
+let blooms=[];
+function seedBloom(){
+  const ang=Math.random()*6.28, sp=0.15+Math.random()*0.5;
+  blooms.push({x:aiPt.x,y:aiPt.y,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp,
+    age:0,life:600+Math.random()*500, r:0, maxR:20+Math.random()*70,
+    hue:38+Math.random()*18, seed:Math.random()*6.28, petals:3+((Math.random()*4)|0)});
+}
+function size(){DPR=Math.min(devicePixelRatio||1,2);W=cv.clientWidth=innerWidth;H=cv.clientHeight=cv.parentElement.clientHeight;cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0);place();}
+size();addEventListener('resize',size);addEventListener('scroll',place,{passive:true});
+const mouse={x:-9999,y:-9999,in:false};
+addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;mouse.in=true;});
+addEventListener('pointerleave',()=>mouse.in=false);
+const LENS=140;
+function truth(px,py){ // signed "how corrupt is this bloom really" — deterministic per position
+  return (Math.sin(px*0.021)*Math.cos(py*0.017)+Math.sin((px+py)*0.013))*0.5+0.5;
+}
+let t=0;
+function drawBloomPretty(b,al){
+  // elegant radial petal form, warm gold
+  x.save();x.translate(b.x,b.y);
+  const pts=b.petals, rr=b.r;
+  x.beginPath();
+  for(let i=0;i<=40;i++){const a=i/40*6.28; const rad=rr*(0.6+0.4*Math.cos(a*pts+b.seed));
+    const px=Math.cos(a)*rad, py=Math.sin(a)*rad; i?x.lineTo(px,py):x.moveTo(px,py);}
+  x.closePath();
+  const g=x.createRadialGradient(0,0,0,0,0,rr);
+  g.addColorStop(0,'hsla('+b.hue+',80%,75%,'+(0.22*al)+')');
+  g.addColorStop(1,'hsla('+b.hue+',70%,55%,0)');
+  x.fillStyle=g;x.fill();
+  x.strokeStyle='hsla('+b.hue+',85%,80%,'+(0.35*al)+')';x.lineWidth=1;x.stroke();
+  x.restore();
+}
+function drawBloomHorror(b,al,sev){
+  // uncanny: too many asymmetric arms, impossible/writhing, sickly desat + void
+  x.save();x.translate(b.x,b.y);
+  const arms=b.petals+3+((sev*4)|0);
+  x.beginPath();
+  for(let i=0;i<=64;i++){const a=i/64*6.28;
+    // broken radius: spikes, negative dips (impossible), jitter
+    let rad=b.r*(0.55+0.5*Math.cos(a*arms+b.seed+t*0.05));
+    rad*= 1+0.5*Math.sin(a*arms*2.3+t*0.11);
+    rad+= (Math.random()-.5)*b.r*0.5*sev;
+    const px=Math.cos(a)*rad, py=Math.sin(a)*rad*(1+0.3*Math.sin(t*0.07)); // asymmetric squash
+    i?x.lineTo(px,py):x.moveTo(px,py);}
+  x.closePath();
+  x.fillStyle='rgba('+(20+30*sev)+','+(10)+','+(14+10*sev)+','+(0.5*al)+')';x.fill();
+  x.strokeStyle='rgba('+(200*sev+30)+',30,40,'+(0.6*al)+')';x.lineWidth=1.2;x.stroke();
+  // writhing filaments
+  for(let k=0;k<arms;k++){const a=k/arms*6.28+t*0.02;
+    x.strokeStyle='rgba('+(180*sev)+',20,30,'+(0.4*al)+')';x.beginPath();x.moveTo(0,0);
+    const len=b.r*(1.1+Math.sin(t*0.1+k)*0.3);
+    x.quadraticCurveTo(Math.cos(a)*len*0.5+ (Math.random()-.5)*8, Math.sin(a)*len*0.5, Math.cos(a)*len,Math.sin(a)*len);x.stroke();}
+  // void core
+  x.fillStyle='rgba(0,0,0,'+(0.7*al)+')';x.beginPath();x.arc(0,0,b.r*0.28,0,6.28);x.fill();
+  x.restore();
+}
+function frame(){
+  t++;
+  if(!reduce && blooms.length<90 && t%4===0) seedBloom();
+  x.fillStyle='rgba(10,10,12,0.14)';x.fillRect(0,0,W,H); // slow trails
+  for(let i=blooms.length-1;i>=0;i--){const b=blooms[i];
+    b.age++; b.x+=b.vx;b.y+=b.vy; b.vy+=0.002;
+    b.r=b.maxR*Math.sin(Math.min(1,b.age/b.life)*Math.PI); // grow then shrink
+    if(b.age>b.life){blooms.splice(i,1);continue;}
+    const al=Math.min(1,b.r/12);
+    // is the lens verifying this bloom right now?
+    let sev=0;
+    if(mouse.in){const dx=b.x-mouse.x,dy=b.y-mouse.y,d2=dx*dx+dy*dy;
+      if(d2<LENS*LENS){ sev=(1-Math.sqrt(d2)/LENS)*truth(b.x,b.y); }}
+    if(sev>0.05) drawBloomHorror(b,al,sev); else drawBloomPretty(b,al);
+  }
+  // lens ring (verification)
+  if(mouse.in){
+    x.strokeStyle='rgba(230,169,176,.5)';x.lineWidth=1;x.beginPath();x.arc(mouse.x,mouse.y,LENS,0,6.28);x.stroke();
+    x.setLineDash([3,7]);x.strokeStyle='rgba(230,169,176,.25)';x.beginPath();x.arc(mouse.x,mouse.y,LENS*(0.5+0.5*Math.abs(Math.sin(t*0.03))),0,6.28);x.stroke();x.setLineDash([]);
+  }
+  raf=requestAnimationFrame(frame);
+}
+let raf;
+if(reduce){ for(let i=0;i<40;i++){seedBloom();const b=blooms[i];b.age=b.life*0.5;b.r=b.maxR;} for(const b of blooms)drawBloomPretty(b,0.8); }
+else raf=requestAnimationFrame(frame);
+})();
+</script></body></html>

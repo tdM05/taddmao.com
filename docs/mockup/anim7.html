@@ -1,0 +1,85 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 7 · Living name</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{margin:0;background:#0d0d0f;color:#f4efe7;font-family:'Inter',sans-serif;overflow:hidden}
+.hero{position:relative;height:100vh;min-height:560px}
+#c{position:absolute;inset:0;display:block}
+.eyebrow{position:absolute;top:6vh;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.08em;color:#8a8478}
+.sub{position:absolute;left:7vw;bottom:16vh;z-index:2;max-width:44ch;font-size:18px;color:#cfc8bd;opacity:0;transition:opacity 1.2s ease 1.2s}
+.sub.in{opacity:1}.sub b{color:#e6a9b0;font-weight:500}
+.hint{position:absolute;bottom:6vh;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:11px;color:#54524c;letter-spacing:.06em}
+</style></head><body>
+<div class=hero>
+  <canvas id=c></canvas>
+  <div class=eyebrow>Math &amp; CS · University of Toronto</div>
+  <p class="sub" id=sub>I work on <b>AI verification</b> — disturb it however you like; the truth resolves back.</p>
+  <div class=hint>◦ move through it</div>
+</div>
+<script>
+(function(){
+const cv=document.getElementById('c'),x=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let W,H,DPR,parts=[];
+const mouse={x:-9999,y:-9999,down:false};
+function sampleText(){
+  // offscreen render of the name, read pixels -> particle home positions
+  const off=document.createElement('canvas');const octx=off.getContext('2d');
+  off.width=W;off.height=H;
+  const fs=Math.min(W*0.19, H*0.34);
+  octx.fillStyle='#fff';octx.textAlign='center';octx.textBaseline='middle';
+  octx.font='700 '+fs+"px 'Fraunces', Georgia, serif";
+  octx.fillText('Tadd Mao', W/2, H/2);
+  const img=octx.getImageData(0,0,W,H).data;
+  const gap=Math.max(4, Math.round(W/430)); // density scales with width
+  const pts=[];
+  for(let y=0;y<H;y+=gap){for(let px=0;px<W;px+=gap){
+    if(img[(y*W+px)*4+3]>128){pts.push([px,y]);}
+  }}
+  return pts;
+}
+function build(){
+  DPR=Math.min(devicePixelRatio||1,2);
+  W=cv.clientWidth=innerWidth;H=cv.clientHeight=cv.parentElement.clientHeight;
+  cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0);
+  const homes=sampleText();
+  parts=homes.map(([hx,hy])=>({hx,hy,
+    x:W/2+(Math.random()-.5)*W, y:H/2+(Math.random()-.5)*H,
+    vx:0,vy:0, ph:Math.random()*Math.PI*2}));
+}
+build();addEventListener('resize',build);
+cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();mouse.x=e.clientX-r.left;mouse.y=e.clientY-r.top;});
+cv.addEventListener('pointerleave',()=>{mouse.x=mouse.y=-9999;});
+cv.addEventListener('pointerdown',()=>mouse.down=true);
+addEventListener('pointerup',()=>mouse.down=false);
+setTimeout(()=>document.getElementById('sub').classList.add('in'),200);
+let t=0;
+function frame(){
+  t++;
+  x.fillStyle='rgba(13,13,15,0.28)';x.fillRect(0,0,W,H); // motion trails
+  const rad = mouse.down? 190:130, force = mouse.down? -0.9:0.7; // click = attract/gather
+  for(const p of parts){
+    // spring home
+    let ax=(p.hx-p.x)*0.012, ay=(p.hy-p.y)*0.012;
+    // idle shimmer so it never stops
+    ax+=Math.cos(t*0.02+p.ph)*0.06; ay+=Math.sin(t*0.02+p.ph)*0.06;
+    // cursor field
+    const dx=p.x-mouse.x, dy=p.y-mouse.y, d2=dx*dx+dy*dy;
+    if(d2<rad*rad){const d=Math.sqrt(d2)||1, f=(1-d/rad)*force*6; ax+=dx/d*f; ay+=dy/d*f;}
+    p.vx=(p.vx+ax)*0.86; p.vy=(p.vy+ay)*0.86;
+    p.x+=p.vx; p.y+=p.vy;
+    // color: settled -> warm paper, displaced -> pink (implies "off from truth")
+    const off=Math.min(1,(Math.abs(p.x-p.hx)+Math.abs(p.y-p.hy))/60);
+    const r=244+(230-244)*off, g=239+(169-239)*off, b=231+(176-231)*off;
+    x.fillStyle='rgba('+(r|0)+','+(g|0)+','+(b|0)+','+(0.85)+')';
+    x.fillRect(p.x, p.y, 1.7, 1.7);
+  }
+  raf=requestAnimationFrame(frame);
+}
+let raf;
+if(reduce){ // just paint the name solid
+  x.fillStyle='#f4efe7';x.textAlign='center';x.textBaseline='middle';
+  x.font='700 '+Math.min(W*0.19,H*0.34)+"px 'Fraunces', Georgia, serif";x.fillText('Tadd Mao',W/2,H/2);
+} else { raf=requestAnimationFrame(frame); }
+})();
+</script></body></html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 4 · Axioms</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f5f2ec;color:#211f1a}
+.hero{position:relative;height:100vh;min-height:560px;background:#0f0f11;color:#f4efe7;overflow:hidden;display:flex;align-items:center}
+#c{position:absolute;inset:0;z-index:1}
+.txt{position:relative;z-index:2;padding:0 7vw;pointer-events:none;max-width:52ch}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.06em;color:#b7a98c}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(44px,8vw,88px);line-height:.96;letter-spacing:-.02em;margin-top:12px;text-shadow:0 4px 60px #0f0f11}
+.intro{font-size:18px;color:#d6cfc4;margin-top:18px;text-shadow:0 2px 30px #0f0f11}.intro b{color:#e6a9b0;font-weight:500}
+.legend{position:absolute;bottom:20px;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6e6a62}
+.legend b{color:#c9a96a}
+</style></head><body>
+<header class=hero>
+  <canvas id=c></canvas>
+  <div class=txt>
+    <div class=eyebrow>Tadd Mao · Math &amp; CS · University of Toronto</div>
+    <h1>From a few<br>axioms, a world.</h1>
+    <p class=intro>Good foundations reach far. I study how to <b>build and judge the axioms</b> a theory rests on.</p>
+  </div>
+  <div class=legend><b>◆ axioms</b> derive theorems outward — click to plant a new axiom</div>
+</header>
+<script>
+(function(){
+const cv=document.getElementById('c'),x=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let W,H,DPR;function size(){DPR=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0);}
+size();addEventListener('resize',size);
+let nodes=[],edges=[];
+function seedAxiom(px,py){const n={x:px,y:py,vx:0,vy:0,axiom:true,born:performance.now?performance.now():0,gen:0};nodes.push(n);return n;}
+function reset(){nodes=[];edges=[];const cx=W*0.62;seedAxiom(cx,H*0.35);seedAxiom(cx+80,H*0.62);seedAxiom(cx-70,H*0.6);}
+reset();addEventListener('resize',reset);
+cv.addEventListener('pointerdown',e=>{const r=cv.getBoundingClientRect();seedAxiom(e.clientX-r.left,e.clientY-r.top);});
+let t=0;
+function derive(){
+  if(nodes.length>90)return;
+  const parents=[...nodes].sort(()=>Math.random()-.5).slice(0,2);
+  if(!parents[0])return;
+  const p=parents[0], q=parents[1]||parents[0];
+  const bx=(p.x+q.x)/2 + (Math.random()-.5)*140;
+  const by=(p.y+q.y)/2 + (Math.random()-.5)*140;
+  const n={x:bx,y:by,vx:0,vy:0,axiom:false,born:t,gen:(p.gen||0)+1,flash:1};
+  nodes.push(n);edges.push({a:p,b:n,t:0});if(q!==p)edges.push({a:q,b:n,t:0});
+}
+function loop(){
+  t++; if(t%22===0)derive();
+  // gentle force layout
+  for(let i=0;i<nodes.length;i++){const a=nodes[i];
+    for(let j=i+1;j<nodes.length;j++){const b=nodes[j];let dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy)||1;
+      if(d<90){const f=(90-d)/d*0.02;a.vx+=dx*f;a.vy+=dy*f;b.vx-=dx*f;b.vy-=dy*f;}}
+    if(!a.axiom){a.vy+=0.0;} a.vx*=0.9;a.vy*=0.9;a.x+=a.vx;a.y+=a.vy;
+    a.x=Math.max(20,Math.min(W-20,a.x));a.y=Math.max(20,Math.min(H-20,a.y));
+  }
+  x.clearRect(0,0,W,H);
+  // edges
+  for(const e of edges){e.t=Math.min(1,e.t+0.05);
+    x.strokeStyle='rgba(201,169,106,'+(0.15+e.t*0.25)+')';x.lineWidth=1;
+    x.beginPath();x.moveTo(e.a.x,e.a.y);x.lineTo(e.a.x+(e.b.x-e.a.x)*e.t,e.a.y+(e.b.y-e.a.y)*e.t);x.stroke();}
+  // nodes
+  for(const n of nodes){
+    if(n.flash){x.fillStyle='rgba(111,191,143,'+n.flash+')';x.font='12px monospace';x.textAlign='center';x.fillText('⊢',n.x,n.y-10);n.flash-=0.03;if(n.flash<0)n.flash=0;}
+    if(n.axiom){x.fillStyle='#c9a96a';x.save();x.translate(n.x,n.y);x.rotate(Math.PI/4);x.fillRect(-4,-4,8,8);x.restore();
+      x.strokeStyle='rgba(201,169,106,.4)';x.beginPath();x.arc(n.x,n.y,9,0,7);x.stroke();}
+    else{const c=Math.max(0.35,1-n.gen*0.12);x.fillStyle='rgba(244,239,231,'+c+')';x.beginPath();x.arc(n.x,n.y,2.6,0,7);x.fill();}
+  }
+  raf=requestAnimationFrame(loop);
+}
+let raf;
+if(reduce){for(let i=0;i<40;i++)derive();loop.call&&0; // just draw once
+  for(const e of edges){e.t=1;x.strokeStyle='rgba(201,169,106,.3)';x.beginPath();x.moveTo(e.a.x,e.a.y);x.lineTo(e.b.x,e.b.y);x.stroke();}
+  for(const n of nodes){if(n.axiom){x.fillStyle='#c9a96a';x.save();x.translate(n.x,n.y);x.rotate(Math.PI/4);x.fillRect(-4,-4,8,8);x.restore();}else{x.fillStyle='rgba(244,239,231,.6)';x.beginPath();x.arc(n.x,n.y,2.6,0,7);x.fill();}}
+}else raf=requestAnimationFrame(loop);
+})();
+</script></body></html>

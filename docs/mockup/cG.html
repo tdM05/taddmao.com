@@ -1,0 +1,46 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Concept G · Verify</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#211f1a;background:#f5f2ec;line-height:1.6}
+a{color:#7a1e28}
+.hero{background:#141414;color:#f4efe7;padding:15vh 7vw 13vh}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.06em;color:#b7a98c}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(46px,9vw,92px);line-height:.98;letter-spacing:-.02em;margin-top:12px}
+.intro{font-size:19px;color:#cfc8bd;margin-top:22px;max-width:48ch}.intro b{color:#e0a3aa;font-weight:500}
+/* the verify terminal card */
+.check{margin-top:34px;font-family:'JetBrains Mono',monospace;font-size:15px;background:#1c1c1c;border:1px solid #2c2c2c;border-radius:8px;padding:16px 18px;max-width:520px;color:#c7cdd4}
+.check .cursor{border-right:2px solid #9a8;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{border-color:transparent}}
+.typing{display:inline-block;overflow:hidden;white-space:nowrap;border-right:2px solid #9a8;width:0;animation:type 2.2s steps(30) .4s forwards, blink 1s steps(1) 2.6s 3}
+@keyframes type{to{width:22ch}}
+.verdict{opacity:0;color:#6fbf8f;animation:show .4s ease 3.0s forwards}
+@keyframes show{to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.typing{animation:none;width:auto;border:none}.verdict{animation:none;opacity:1}}
+.wrap{max-width:720px;margin:0 auto;padding:8vh 6vw}
+.sec{margin-top:48px}
+.sec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
+.sec-h .lbl{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8a7f6a}.sec-h .ln{flex:1;height:1px;background:#ddd6c8}
+.row{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:baseline;padding:12px 0;border-bottom:1px solid #e6e0d3}
+.row .t{font-size:16px}.row .t b{font-weight:600}.row .t .d{color:#6a645a;font-size:14px}
+.row a{font-family:'JetBrains Mono',monospace;font-size:12px;text-decoration:none;color:#7a1e28;white-space:nowrap}
+.beyond{margin-top:14px;font-size:16px;color:#413c33}.beyond a{text-decoration:none;border-bottom:1px solid #d9cfbe}
+.foot{margin-top:56px;padding-top:16px;border-top:1px solid #ddd6c8;font-family:'JetBrains Mono',monospace;font-size:12px;color:#8a7f6a;display:flex;gap:18px;flex-wrap:wrap}.foot a{text-decoration:none}
+</style></head><body>
+<header class=hero>
+  <div class=eyebrow>Tadd Mao · Math &amp; CS · University of Toronto</div>
+  <h1>Tadd Mao</h1>
+  <p class=intro>I work on <b>AI verification</b> — knowing, with proof rather than trust, that a machine did what we asked.</p>
+  <div class=check><span class=typing>theorem trust : verified ✓</span><br><span class=verdict>⊢ goals accomplished 🎉</span></div>
+</header>
+<div class=wrap>
+  <div class=sec><div class=sec-h><span class=lbl>Research</span><span class=ln></span></div>
+    <div class=row><span class=t><b>Faithful formalization of mathematics</b> <span class=d>— first author, AAAI-27</span></span><a href="#">arXiv ↗</a></div>
+    <div class=row><span class=t><b>Formalizing Euclid's <i>Elements</i> in Lean</b> <span class=d>— NSERC, with X. Si</span></span><a href="#">in progress</a></div>
+    <div class=row><span class=t><b>A merged proof in Mathlib</b></span><a href="#">PR #39435 ↗</a></div>
+  </div>
+  <div class=sec><div class=sec-h><span class=lbl>Beyond</span><span class=ln></span></div>
+    <p class=beyond>I also play <a href="#">piano and violin</a>, and make <a href="#">art</a>. A few <a href="#">things I've built</a>, too.</p></div>
+  <div class=foot><span>taddmao [at] gmail [dot] com</span><a href="#">github/tdM05</a><a href="#">CV ↓</a></div>
+</div>
+</body></html>

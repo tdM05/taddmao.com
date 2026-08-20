@@ -1,0 +1,74 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 14 · pristine name</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&family=JetBrains+Mono:wght@300;400&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{margin:0;background:#08080a;overflow:hidden}
+#c{position:fixed;inset:0;display:block}
+.eyebrow{position:fixed;top:6vh;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:300;letter-spacing:.18em;color:#7f7a72;text-transform:uppercase}
+</style></head><body>
+<canvas id=c></canvas>
+<div class=eyebrow>Math &amp; CS · University of Toronto</div>
+<script>
+(function(){
+const cv=document.getElementById('c'),x=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let W,H,DPR,P=[];
+const mouse={x:-9999,y:-9999,in:false};
+function sample(){
+  const o=document.createElement('canvas'),oc=o.getContext('2d');
+  o.width=Math.round(W*DPR);o.height=Math.round(H*DPR);oc.scale(DPR,DPR);
+  oc.fillStyle='#fff';oc.textAlign='center';oc.textBaseline='middle';
+  let fs=Math.min(W*0.135,150);
+  oc.font='600 '+fs+"px 'Fraunces',Georgia,serif";
+  while(oc.measureText('Tadd Mao').width>W*0.82&&fs>10){fs-=2;oc.font='600 '+fs+"px 'Fraunces',Georgia,serif";}
+  oc.fillText('Tadd Mao',W/2,H*0.5);
+  const img=oc.getImageData(0,0,o.width,o.height).data;
+  const gap=Math.max(3,Math.round(3*DPR));   // dense = high-res
+  P=[];
+  for(let y=0;y<o.height;y+=gap)for(let px=0;px<o.width;px+=gap){
+    if(img[(y*o.width+px)*4+3]>140){
+      const hx=px/DPR, hy=y/DPR;
+      P.push({hx,hy,x:hx+(Math.random()-.5)*40,y:hy+(Math.random()-.5)*40,vx:0,vy:0,
+        ph:Math.random()*6.28, sz:0.7+Math.random()*0.5, tw:0.4+Math.random()*0.6, born:Math.random()});
+    }
+  }
+}
+function build(){DPR=Math.min(devicePixelRatio||1,2);W=cv.clientWidth=innerWidth;H=cv.clientHeight=innerHeight;cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0);sample();}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(build);build();
+addEventListener('resize',build);
+addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;mouse.in=true;});
+addEventListener('pointerleave',()=>mouse.in=false);
+let t=0,intro=0;
+function frame(){
+  t++; intro=Math.min(1,intro+0.012);
+  // clean dark, no smear — crisp pristine look (full clear each frame)
+  x.clearRect(0,0,W,H);
+  // very faint radial glow behind the wordmark
+  const g=x.createRadialGradient(W/2,H*0.5,0,W/2,H*0.5,W*0.4);
+  g.addColorStop(0,'rgba(120,140,170,0.05)');g.addColorStop(1,'rgba(8,8,10,0)');
+  x.fillStyle=g;x.fillRect(0,0,W,H);
+  const ie=intro*intro*(3-2*intro);
+  for(const p of P){
+    let ax=(p.hx-p.x)*0.06, ay=(p.hy-p.y)*0.06;   // crisp spring home
+    // micro drift — subtle life, stays tight to home
+    ax+=Math.cos(t*0.015+p.ph)*0.03; ay+=Math.sin(t*0.013+p.ph)*0.03;
+    // ultra-subtle cursor influence
+    if(mouse.in){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy,R=90;if(d2<R*R){const d=Math.sqrt(d2)||1,f=(1-d/R)*0.6;ax+=dx/d*f;ay+=dy/d*f;}}
+    p.vx=(p.vx+ax)*0.80; p.vy=(p.vy+ay)*0.80; p.x+=p.vx; p.y+=p.vy;
+    // twinkle: subtle brightness shimmer, cool-white with faint blue -> pristine/futuristic
+    const tw=0.55+0.45*Math.sin(t*0.06*p.tw+p.ph*3);
+    const appear=Math.min(1,Math.max(0,(ie-p.born*0.5)/0.5));
+    const alpha=(0.35+0.6*tw)*appear;
+    // tiny crisp dot + faint glow via two draws
+    x.fillStyle='rgba(210,224,240,'+(alpha*0.25)+')';
+    x.beginPath();x.arc(p.x,p.y,p.sz*2.1,0,6.28);x.fill();     // halo
+    x.fillStyle='rgba(244,248,255,'+alpha+')';
+    x.beginPath();x.arc(p.x,p.y,p.sz,0,6.28);x.fill();         // core
+  }
+  raf=requestAnimationFrame(frame);
+}
+let raf;
+if(reduce){x.fillStyle='#eef3fb';for(const p of P){x.beginPath();x.arc(p.hx,p.hy,1,0,6.28);x.fill();}}
+else raf=requestAnimationFrame(frame);
+})();
+</script></body></html>

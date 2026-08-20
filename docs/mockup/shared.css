@@ -1,0 +1,20 @@
+:root{--ink:#1a1a1a;--paper:#f7f5f0;--line:#e4dfd4;--muted:#6b6b6b;--accent:#7a1e28;--verified:#3d6b4f;--dark:#161616;--dinm:#f4efe7;}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--paper);line-height:1.6;-webkit-font-smoothing:antialiased}
+.serif{font-family:'Fraunces',Georgia,serif}.mono{font-family:'JetBrains Mono',monospace}
+a{color:var(--accent)}
+nav{position:sticky;top:0;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:14px 7vw;background:rgba(22,22,22,.92);backdrop-filter:blur(6px);color:var(--dinm);font-size:14px}
+nav .brand{font-family:'Fraunces',serif;font-weight:600}
+nav a{color:var(--dinm);text-decoration:none;margin-left:22px;opacity:.82}nav a:hover{opacity:1}
+nav a.cv{color:var(--paper);border:1px solid rgba(244,239,231,.4);padding:4px 12px;border-radius:4px}
+.body{padding:7vh 7vw;max-width:960px;margin:0 auto}
+.sec-label{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.sec-title{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(22px,3vw,30px);margin-bottom:18px}
+hr.rule{border:none;border-top:1px solid var(--line);margin:0 7vw}
+.claim{display:grid;grid-template-columns:20px 1fr auto;gap:12px;padding:15px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.claim .mark{font-family:'JetBrains Mono',monospace;color:var(--verified);font-size:15px}
+.claim .t{font-size:15.5px}.claim .t b{font-weight:600}
+.claim a{font-family:'JetBrains Mono',monospace;font-size:12px;text-decoration:none;white-space:nowrap;border-bottom:1px dashed rgba(122,30,40,.4)}
+footer{background:var(--dark);color:#cfc8bd;padding:5vh 7vw;font-size:14px}footer a{color:#d98b93;text-decoration:none}
+.tag{font-size:12px;color:var(--muted);max-width:960px;margin:3vh auto 0;padding:0 7vw;font-style:italic}
+@media(max-width:700px){.claim{grid-template-columns:20px 1fr}.claim a{grid-column:2}}

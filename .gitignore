@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 
 tmp/
+# CV lives in its own git repo (see cv/)
+cv/

@@ -1,0 +1,81 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 16 · sci-fi</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{margin:0;background:#06070a;overflow:hidden}
+#c{position:fixed;inset:0;display:block}
+.eyebrow{position:fixed;top:6vh;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:400;letter-spacing:.28em;color:#4b6b7a;text-transform:uppercase}
+.eyebrow .dot{color:#37e0c8}
+.subtitle{position:fixed;left:0;right:0;top:calc(50% + clamp(52px,8vw,104px));z-index:2;text-align:center;
+  font-family:'JetBrains Mono',monospace;font-weight:400;font-size:clamp(12px,1.5vw,16px);letter-spacing:.34em;color:#5f8494;text-transform:uppercase;opacity:0;transition:opacity 1.4s ease .7s}
+.subtitle.in{opacity:1}.subtitle b{color:#8fe9dc;font-weight:500}
+</style></head><body>
+<canvas id=c></canvas>
+<div class=eyebrow><span class=dot>▸</span> MATH &amp; CS · UNIVERSITY OF TORONTO</div>
+<div class=subtitle id=sub>AI&nbsp;Verification&nbsp;·&nbsp;Research</div>
+<script>
+(function(){
+const cv=document.getElementById('c'),x=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let W,H,DPR,P=[];
+const mouse={x:-9999,y:-9999,in:false};
+function sample(){
+  const o=document.createElement('canvas'),oc=o.getContext('2d');
+  o.width=Math.round(W*DPR);o.height=Math.round(H*DPR);oc.scale(DPR,DPR);
+  oc.fillStyle='#fff';oc.textAlign='center';oc.textBaseline='middle';
+  let fs=Math.min(W*0.14,158);
+  oc.font='600 '+fs+"px 'Space Grotesk',system-ui,sans-serif";
+  while(oc.measureText('Tadd Mao').width>W*0.84&&fs>10){fs-=2;oc.font='600 '+fs+"px 'Space Grotesk',sans-serif";}
+  oc.fillText('Tadd Mao',W/2,H*0.5);
+  const img=oc.getImageData(0,0,o.width,o.height).data;
+  const gap=Math.max(3,Math.round(3*DPR));
+  P=[];
+  for(let y=0;y<o.height;y+=gap)for(let px=0;px<o.width;px+=gap){
+    if(img[(y*o.width+px)*4+3]>150){
+      const hx=px/DPR, hy=y/DPR;
+      P.push({hx,hy,x:hx+(Math.random()-.5)*W*0.4,y:hy+(Math.random()-.5)*H*0.3,vx:0,vy:0,
+        ph:Math.random()*6.28, born:Math.random()*0.6, lit:0});
+    }
+  }
+}
+function build(){DPR=Math.min(devicePixelRatio||1,2);W=cv.clientWidth=innerWidth;H=cv.clientHeight=innerHeight;cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0);sample();}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(build);build();
+addEventListener('resize',build);
+addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;mouse.in=true;});
+addEventListener('pointerleave',()=>mouse.in=false);
+let t=0,intro=0;
+function frame(){
+  t++; intro=Math.min(1,intro+0.01);
+  x.clearRect(0,0,W,H);
+  // faint technical grid backdrop
+  x.strokeStyle='rgba(60,120,140,0.05)';x.lineWidth=1;
+  const step=44;
+  for(let gx=(t*0.15)%step;gx<W;gx+=step){x.beginPath();x.moveTo(gx,0);x.lineTo(gx,H);x.stroke();}
+  for(let gy=0;gy<H;gy+=step){x.beginPath();x.moveTo(0,gy);x.lineTo(W,gy);x.stroke();}
+  // horizontal scan sweep
+  const scanY=(t*2.4)%(H*1.3)-H*0.15;
+  const ie=intro*intro*(3-2*intro);
+  for(const p of P){
+    let ax=(p.hx-p.x)*0.08, ay=(p.hy-p.y)*0.08;   // tight, snappy spring = precise/digital
+    ax+=Math.cos(t*0.02+p.ph)*0.02; ay+=Math.sin(t*0.02+p.ph)*0.02; // micro jitter, minimal
+    if(mouse.in){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy,R=80;if(d2<R*R){const d=Math.sqrt(d2)||1,f=(1-d/R)*0.5;ax+=dx/d*f;ay+=dy/d*f;}}
+    p.vx=(p.vx+ax)*0.78; p.vy=(p.vy+ay)*0.78; p.x+=p.vx; p.y+=p.vy;
+    const appear=Math.min(1,Math.max(0,(ie-p.born)/0.4));
+    // scan lights particles as it passes -> brief cyan flare, then settle to cool white
+    const near=Math.abs(p.y-scanY);
+    if(near<10)p.lit=1; else p.lit*=0.94;
+    const baseA=(0.5+0.3*Math.sin(t*0.05+p.ph))*appear;
+    // core: crisp square pixel (digital), cool white
+    const r=0.9;
+    if(p.lit>0.05){x.fillStyle='rgba(90,240,220,'+(p.lit*0.9*appear)+')';x.fillRect(p.x-1,p.y-1,2.4,2.4);}
+    x.fillStyle='rgba(220,236,246,'+baseA+')';
+    x.fillRect(p.x-r,p.y-r,r*2,r*2);
+  }
+  raf=requestAnimationFrame(frame);
+}
+let raf;
+if(reduce){x.fillStyle='#dcecf6';for(const p of P){x.fillRect(p.hx-1,p.hy-1,2,2);}}
+else raf=requestAnimationFrame(frame);
+setTimeout(()=>{var e=document.getElementById('sub');if(e)e.classList.add('in');},300);
+})();
+</script></body></html>

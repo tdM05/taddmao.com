@@ -1,0 +1,119 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 8 · Surface vs verified</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{margin:0;background:#0b0b0d;color:#f4efe7;font-family:'Inter',sans-serif;overflow:hidden}
+.hero{position:relative;height:100vh;min-height:560px}
+#c{position:absolute;inset:0;display:block;cursor:crosshair}
+.eyebrow{position:absolute;top:6vh;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.1em;color:#8a8478}
+.eyebrow b{color:#f4efe7;font-weight:500}
+.sub{position:absolute;left:7vw;bottom:16vh;z-index:2;max-width:46ch;font-size:18px;color:#cfc8bd;text-shadow:0 2px 30px #0b0b0d;opacity:0;transition:opacity 1.4s ease 1s}
+.sub.in{opacity:1}.sub b{color:#e6a9b0;font-weight:500}
+.hint{position:absolute;bottom:6vh;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:11px;color:#55534d;letter-spacing:.06em}
+</style></head><body>
+<div class=hero>
+  <canvas id=c></canvas>
+  <div class=eyebrow><b>Tadd Mao</b> &nbsp;·&nbsp; Math &amp; CS &nbsp;·&nbsp; University of Toronto</div>
+  <p class="sub" id=sub>It all looks fine on the surface. <b>Verify it</b> — and see what was really there.</p>
+  <div class=hint>◦ move to verify &nbsp;·&nbsp; click to audit everything</div>
+</div>
+<script>
+(function(){
+const cv=document.getElementById('c'),x=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let W,H,DPR,P=[],grid,GS=42,cols,rows;
+const mouse={x:-9999,y:-9999};let auditT=0;
+function fit(octx,text,maxw){let fs=Math.min(W*0.14,H*0.26);for(;fs>10;fs-=2){octx.font='700 '+fs+"px 'Fraunces',Georgia,serif";if(octx.measureText(text).width<maxw)break;}return fs;}
+function build(){
+  DPR=Math.min(devicePixelRatio||1,2);
+  W=cv.clientWidth=innerWidth;H=cv.clientHeight=cv.parentElement.clientHeight;
+  cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0);
+  const off=document.createElement('canvas'),o=off.getContext('2d');off.width=W;off.height=H;
+  o.fillStyle='#fff';o.textAlign='center';o.textBaseline='middle';
+  const fs=fit(o,'AI verification',W*0.82);
+  o.font='700 '+fs+"px 'Fraunces',Georgia,serif";
+  o.fillText('AI verification',W/2,H/2);
+  const d=o.getImageData(0,0,W,H).data, gap=Math.max(4,Math.round(W/460));
+  P=[];
+  for(let y=0;y<H;y+=gap)for(let px=0;px<W;px+=gap){
+    if(d[(y*W+px)*4+3]>128){
+      P.push({x:px+(Math.random()-.5)*1.5,y:y+(Math.random()-.5)*1.5,ph:Math.random()*6.28,
+        corrupt:false,infect:0,revealed:0});
+    }
+  }
+  // seed a few corruptions
+  for(let k=0;k<Math.max(3,P.length*0.006);k++){const p=P[(Math.random()*P.length)|0];if(p){p.corrupt=true;p.infect=1;}}
+  // spatial grid for neighbor infection
+  cols=Math.ceil(W/GS);rows=Math.ceil(H/GS);grid=Array.from({length:cols*rows},()=>[]);
+  P.forEach((p,i)=>{const gx=(p.x/GS)|0,gy=(p.y/GS)|0;(grid[gy*cols+gx]||(grid[gy*cols+gx]=[])).push(i);});
+}
+build();addEventListener('resize',build);
+cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();mouse.x=e.clientX-r.left;mouse.y=e.clientY-r.top;});
+cv.addEventListener('pointerleave',()=>{mouse.x=mouse.y=-9999;});
+cv.addEventListener('pointerdown',()=>{auditT=1;});
+setTimeout(()=>document.getElementById('sub').classList.add('in'),400);
+function neigh(p){const gx=(p.x/GS)|0,gy=(p.y/GS)|0,out=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const c=grid[(gy+dy)*cols+(gx+dx)];if(c)for(const i of c)out.push(i);}return out;}
+let t=0;
+function frame(){
+  t++;
+  // compounding spread: each frame, some corrupt particles infect a near-neighbour
+  const corr=[];for(let i=0;i<P.length;i++)if(P[i].corrupt)corr.push(i);
+  const k=Math.min(corr.length, 6);
+  for(let s=0;s<k;s++){const p=P[corr[(Math.random()*corr.length)|0]];const nb=neigh(p);
+    for(let a=0;a<3;a++){const j=nb[(Math.random()*nb.length)|0];const q=P[j];
+      if(q&&!q.corrupt){const dx=q.x-p.x,dy=q.y-p.y;if(dx*dx+dy*dy<GS*GS){q.corrupt=true;q.infect=0.02;break;}}}}
+  for(const p of P){if(p.corrupt&&p.infect<1)p.infect=Math.min(1,p.infect+0.02);}
+  if(auditT>0)auditT=Math.max(0,auditT-0.012);
+  // sheen sweep position
+  const sweep=(t*2.2)%(W*1.5)-W*0.25;
+  x.fillStyle='rgba(11,11,13,0.4)';x.fillRect(0,0,W,H); // trails
+  const lensR=150, lr2=lensR*lensR;
+  for(const p of P){
+    const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy;
+    const inLens=d2<lr2, lensF=inLens?1-Math.sqrt(d2)/lensR:0;
+    const audit=auditT>0? auditT:0;
+    const see=Math.max(lensF>0?1:0, audit>0.5?1:0); // are we currently seeing truth here?
+    // update revealed memory
+    if(see>0) p.revealed=Math.min(1,p.revealed+0.2);
+    const shimmer=0.75+0.25*Math.sin(t*0.05+p.ph);
+    if(see>0){
+      // TRUE state
+      if(p.corrupt){
+        const jit=p.infect*2.2;
+        const rx=p.x+(Math.random()-.5)*jit, ry=p.y+(Math.random()-.5)*jit;
+        x.fillStyle='rgba('+(180+40*Math.random())+',40,44,'+(0.85)+')';
+        x.fillRect(rx,ry,2.2,2.2);
+        if(Math.random()<0.04){x.fillStyle='rgba(0,0,0,.9)';x.fillRect(rx-1,ry-1,4,4);} // void flecks
+      } else {
+        x.fillStyle='rgba(111,191,143,'+(0.9)+')';x.fillRect(p.x,p.y,1.9,1.9);
+        if(Math.random()<0.015){x.fillStyle='rgba(111,191,143,.8)';x.font='9px monospace';x.fillText('⊢',p.x,p.y);}
+      }
+    } else {
+      // SURFACE: flawless glossy gold, sheen sweep — corruption invisible
+      let b=shimmer; const dfromsweep=Math.abs(p.x-sweep); if(dfromsweep<120)b=Math.min(1.6,b+ (1-dfromsweep/120)*0.8);
+      // faint memory of what was already verified (persists so you build a trust map)
+      if(p.revealed>0.5){
+        if(p.corrupt){x.fillStyle='rgba(150,45,48,'+(0.35+0.2*shimmer)+')';x.fillRect(p.x,p.y,2,2);continue;}
+        else {x.fillStyle='rgba(120,160,135,'+(0.5*shimmer)+')';x.fillRect(p.x,p.y,1.8,1.8);continue;}
+      }
+      const r=201*b, g=169*b, bl=106*b;
+      x.fillStyle='rgba('+Math.min(255,r|0)+','+Math.min(255,g|0)+','+Math.min(255,bl|0)+',0.95)';
+      x.fillRect(p.x,p.y,1.9,1.9);
+    }
+  }
+  // lens ring
+  if(mouse.x>-9000){
+    x.strokeStyle='rgba(230,169,176,.5)';x.lineWidth=1;x.beginPath();x.arc(mouse.x,mouse.y,lensR,0,6.28);x.stroke();
+    x.strokeStyle='rgba(230,169,176,.15)';x.beginPath();x.arc(mouse.x,mouse.y,lensR*(0.6+0.4*Math.abs(Math.sin(t*0.04))),0,6.28);x.stroke();
+    x.fillStyle='rgba(230,169,176,.7)';x.font='10px monospace';x.textAlign='left';x.fillText('verify',mouse.x+lensR-40,mouse.y-lensR+14);
+  }
+  if(auditT>0){x.fillStyle='rgba(230,169,176,'+auditT*0.06+')';x.fillRect(0,0,W,H);}
+  raf=requestAnimationFrame(frame);
+}
+let raf;
+if(reduce){
+  // static split: left pristine gold, right revealed truth
+  for(const p of P){if(p.x<W/2){x.fillStyle='#c9a96a';x.fillRect(p.x,p.y,2,2);}else{x.fillStyle=p.corrupt?'rgba(180,45,48,.9)':'rgba(111,191,143,.9)';x.fillRect(p.x,p.y,2,2);}}
+}else raf=requestAnimationFrame(frame);
+})();
+</script></body></html>

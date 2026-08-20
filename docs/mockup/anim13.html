@@ -1,0 +1,123 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 13</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{margin:0;background:#0c0c0e;overflow:hidden}
+#c{position:fixed;inset:0;display:block}
+.eyebrow{position:fixed;top:6vh;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.1em;color:#8a8478}
+.hint{position:fixed;bottom:5vh;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:11px;color:#3a3833;letter-spacing:.06em}
+</style></head><body>
+<canvas id=c></canvas>
+<div class=eyebrow>Math &amp; CS · University of Toronto</div>
+<div class=hint>◦ inspect closely, and wait</div>
+<script>
+(function(){
+const cv=document.getElementById('c'),x=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let W,H,DPR,P=[];
+const mouse={x:-9999,y:-9999,in:false};
+// sample a centered line of words; tag particles with the word index so we can tint one word
+function sampleLine(words,fs,cy,gap,arr,tagBase){
+  const o=document.createElement('canvas'),oc=o.getContext('2d');o.width=W;o.height=H;
+  oc.textAlign='left';oc.textBaseline='middle';oc.font='700 '+fs+"px 'Fraunces',Georgia,serif";
+  const widths=words.map(w=>oc.measureText(w).width);
+  const space=oc.measureText(' ').width;
+  const total=widths.reduce((a,b)=>a+b,0)+space*(words.length-1);
+  let cx=(W-total)/2;
+  words.forEach((w,wi)=>{
+    oc.clearRect(0,0,W,H);oc.fillStyle='#fff';oc.fillText(w,cx,cy);
+    const d=oc.getImageData(0,0,W,H).data;
+    for(let y=0;y<H;y+=gap)for(let px=0;px<W;px+=gap){
+      if(d[(y*W+px)*4+3]>128) arr.push({hx:px,hy:y,x:px,y:y,vx:0,vy:0,ph:Math.random()*6.28,
+        bad:0, reveal:0, word:tagBase+wi, sz:1.5+Math.random()*0.5, drift:0, fade:1});
+    }
+    cx+=widths[wi]+space;
+  });
+}
+function build(){
+  DPR=Math.min(devicePixelRatio||1,2);W=cv.clientWidth=innerWidth;H=cv.clientHeight=innerHeight;
+  cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0);
+  P=[];
+  let fsName=Math.min(W*0.13,140);
+  // fit name
+  const o=document.createElement('canvas').getContext('2d');o.font='700 '+fsName+"px 'Fraunces',serif";
+  while(o.measureText('Tadd Mao').width>W*0.8&&fsName>10){fsName-=2;o.font='700 '+fsName+"px 'Fraunces',serif";}
+  const gap=Math.max(4,Math.round(W/440));
+  sampleLine(['Tadd','Mao'], fsName, H*0.46, gap, P, 0);           // words 0,1
+  sampleLine(['AI','Verification','Research'], Math.max(16,fsName*0.28), H*0.46+fsName*0.62, gap, P, 10); // 10,11,12
+}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(build);build();
+addEventListener('resize',build);
+addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;mouse.in=true;});
+addEventListener('pointerleave',()=>{mouse.in=false;});
+// AI scanners: faint lines that follow a particle, nudge neighbours, and silently add hidden 'bad'
+const scanners=[];
+for(let i=0;i<3;i++)scanners.push({tgt:0,life:0,max:60+((Math.random()*120)|0)});
+let t=0, hover=0, verifying=0;
+function frame(){
+  t++;
+  // hover accumulation: only when cursor is over the wordmark band
+  const band = mouse.in && mouse.y>H*0.34 && mouse.y<H*0.68;
+  hover += band? 0.02 : -0.03; hover=Math.max(0,Math.min(1,hover));
+  // "verifying" = sustained hover past the light-test phase -> ramps in slowly
+  const vTarget = band && hover>0.5 ? 1:0;
+  verifying += (vTarget-verifying)*0.03; // continuous
+  // trails
+  x.fillStyle='rgba(12,12,14,0.30)';x.fillRect(0,0,W,H);
+  // ---- AI scanners (benign look; secretly add bad) ----
+  for(const s of scanners){
+    if(s.life<=0 || !P[s.tgt]){ s.tgt=(Math.random()*P.length)|0; s.life=s.max; s.from={x:Math.random()*W,y:Math.random()*H}; }
+    s.life--;
+    const p=P[s.tgt]; if(!p)continue;
+    // faint scan line following the particle
+    const a=0.10*Math.min(1,s.life/20)*Math.min(1,(s.max-s.life)/20);
+    x.strokeStyle='rgba(150,170,190,'+a+')';x.lineWidth=1;
+    x.beginPath();x.moveTo(s.from.x,s.from.y);x.lineTo(p.x,p.y);x.stroke();
+    x.fillStyle='rgba(170,190,210,'+(a*1.4)+')';x.beginPath();x.arc(p.x,p.y,2.2,0,6.28);x.fill();
+    // silently accumulate hidden badness on this + neighbours (never shown)
+    p.bad=Math.min(1,p.bad+0.004);
+    // very slight nudge to nearby particles
+    for(let k=0;k<4;k++){const q=P[(Math.random()*P.length)|0];if(!q)continue;const dx=q.x-p.x,dy=q.y-p.y;if(dx*dx+dy*dy<1400){q.vx+=dx*0.0006;q.vy+=dy*0.0006;q.bad=Math.min(1,q.bad+0.001);}}
+  }
+  // ---- particles ----
+  const REV_R=70;
+  for(const p of P){
+    let ax=0,ay=0;
+    // VERY subtle cursor nudge (light test) — springs back
+    if(mouse.in){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy,R=80;
+      if(d2<R*R){const d=Math.sqrt(d2)||1,f=(1-d/R)*0.5;ax+=dx/d*f;ay+=dy/d*f;}}
+    // reveal: only within tiny radius of cursor AND only while verifying
+    let rt=0;
+    if(verifying>0.02 && mouse.in){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy;
+      if(d2<REV_R*REV_R){rt=(1-Math.sqrt(d2)/REV_R)*verifying*p.bad;}}
+    p.reveal += (rt-p.reveal)*0.06; // continuous transition
+    // home spring
+    ax+=(p.hx-p.x)*0.02; ay+=(p.hy-p.y)*0.02;
+    // idle shimmer
+    ax+=Math.cos(t*0.02+p.ph)*0.04; ay+=Math.sin(t*0.02+p.ph)*0.04;
+    // revealed corruption: continuous drift + fade
+    if(p.reveal>0.02){ ax+=(Math.random()-.5)*p.reveal*1.4; ay+=(Math.random()-.5)*p.reveal*1.4 + p.reveal*0.15; }
+    p.vx=(p.vx+ax)*0.84; p.vy=(p.vy+ay)*0.84; p.x+=p.vx; p.y+=p.vy;
+    p.fade += (( p.reveal>0.5 ? (0.35) : 1) - p.fade)*0.05; // some fade while strongly revealed
+    // draw: elongate along velocity; tint toward faint red by reveal
+    const spd=Math.hypot(p.vx,p.vy), ang=Math.atan2(p.vy,p.vx);
+    const elong=1+Math.min(3, spd*0.9 + p.reveal*2.5);
+    const r=p.sz;
+    const isVer = p.word===11; // "Verification"
+    const redMix = Math.max(p.reveal, isVer? verifying*0.9:0);
+    const cr=Math.round(238+ (200-238)*0 + redMix*(210-238)*-0); // keep bright base
+    // base warm-white -> faint red
+    const R_=Math.round(240 + (200-240)*0 + redMix*(200-240)*0); 
+    const rr=Math.round(240*(1-redMix)+205*redMix), gg=Math.round(236*(1-redMix)+70*redMix), bb=Math.round(228*(1-redMix)+80*redMix);
+    x.save();x.translate(p.x,p.y);x.rotate(ang);
+    x.fillStyle='rgba('+rr+','+gg+','+bb+','+(0.9*p.fade)+')';
+    x.beginPath();x.ellipse(0,0,r*elong,r,0,0,6.28);x.fill();
+    x.restore();
+  }
+  raf=requestAnimationFrame(frame);
+}
+let raf;
+if(reduce){x.fillStyle='#f0ece3';for(const p of P){x.beginPath();x.arc(p.hx,p.hy,1.6,0,6.28);x.fill();}}
+else raf=requestAnimationFrame(frame);
+})();
+</script></body></html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 1 · Verification stream</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f5f2ec;color:#211f1a}
+.hero{position:relative;height:100vh;min-height:560px;background:#101012;color:#f4efe7;overflow:hidden;display:flex;align-items:center}
+#c{position:absolute;inset:0;z-index:1}
+.txt{position:relative;z-index:2;padding:0 7vw;pointer-events:none;max-width:60ch}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.06em;color:#b7a98c}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(46px,9vw,96px);line-height:.96;letter-spacing:-.02em;margin-top:12px;text-shadow:0 4px 50px #101012}
+.intro{font-size:19px;color:#d6cfc4;margin-top:22px;text-shadow:0 2px 30px #101012}.intro b{color:#e6a9b0;font-weight:500}
+.legend{position:absolute;bottom:20px;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6e6a62;letter-spacing:.05em}
+.legend b{color:#6fbf8f}.legend i{color:#d98b93;font-style:normal}
+</style></head><body>
+<header class=hero>
+  <canvas id=c></canvas>
+  <div class=txt>
+    <div class=eyebrow>Tadd Mao · Math &amp; CS · University of Toronto</div>
+    <h1>Trust nothing.<br>Verify everything.</h1>
+    <p class=intro>I work on <b>AI verification</b> — every claim must pass a checker before it's believed.</p>
+  </div>
+  <div class=legend>claims &rarr; [ verifier ] &rarr; <b>&#8866; accepted</b> &nbsp;/&nbsp; <i>&#10007; rejected</i></div>
+</header>
+<script>
+(function(){
+const cv=document.getElementById('c'),x=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let W,H,DPR,gateX;
+function size(){DPR=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0);gateX=W*0.62;}
+size();addEventListener('resize',size);
+const mouse={x:-999,y:-999,on:false};
+addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();mouse.x=e.clientX-r.left;mouse.y=e.clientY-r.top;mouse.on=true;});
+addEventListener('pointerleave',()=>mouse.on=false);
+// claims stream from left toward the gate; gate accepts most, rejects some
+const claims=[]; let acc=0,rej=0;
+function spawn(){claims.push({x:-20,y:H*(0.15+Math.random()*0.7),v:0.8+Math.random()*1.2,st:'fly',r:2+Math.random()*2,seed:Math.random()});}
+for(let i=0;i<30;i++){spawn();claims[i].x=Math.random()*gateX;}
+let t=0,acced=[];
+function loop(){
+  t++; x.clearRect(0,0,W,H);
+  // faint vertical "verifier" gate
+  const gx=gateX;
+  const g=x.createLinearGradient(gx-40,0,gx+40,0);
+  g.addColorStop(0,'rgba(230,169,176,0)');g.addColorStop(.5,'rgba(230,169,176,.14)');g.addColorStop(1,'rgba(230,169,176,0)');
+  x.fillStyle=g;x.fillRect(gx-40,0,80,H);
+  x.strokeStyle='rgba(230,169,176,.35)';x.lineWidth=1;x.setLineDash([4,6]);
+  x.beginPath();x.moveTo(gx,0);x.lineTo(gx,H);x.stroke();x.setLineDash([]);
+  x.fillStyle='rgba(183,169,140,.6)';x.font='11px monospace';x.textAlign='center';x.fillText('verifier',gx,26);
+  if(claims.length<34 && t%6===0)spawn();
+  for(let i=claims.length-1;i>=0;i--){
+    const c=claims[i];
+    if(c.st==='fly'){
+      c.x+=c.v;
+      // slight pull toward cursor if near (cursor = you inspecting the stream)
+      if(mouse.on){const dy=mouse.y-c.y,d=Math.hypot(mouse.x-c.x,dy); if(d<120)c.y+=dy*0.01;}
+      if(c.x>=gx){ // decision at gate
+        if(c.seed>0.22){c.st='ok';c.tx=gx;acc++;acced.push({x:gx,y:c.y,t:0});}
+        else{c.st='rej';rej++;c.vy=(Math.random()-.5)*2;}
+      }
+    } else if(c.st==='ok'){ c.x+=c.v*1.3; if(c.x>W+20)claims.splice(i,1); }
+    else { c.x-=1.5; c.y+=c.vy; c.alpha=(c.alpha??1)-0.03; if(c.alpha<=0)claims.splice(i,1); }
+    // draw claim
+    if(c.st==='rej'){x.fillStyle='rgba(217,139,147,'+(c.alpha??1)+')';x.beginPath();x.arc(c.x,c.y,c.r,0,7);x.fill();
+      x.font='12px monospace';x.fillText('✗',c.x+6,c.y+4);}
+    else if(c.st==='ok'){x.fillStyle='rgba(111,191,143,.95)';x.beginPath();x.arc(c.x,c.y,c.r+.5,0,7);x.fill();
+      x.strokeStyle='rgba(111,191,143,.5)';x.beginPath();x.arc(c.x,c.y,c.r+4,0,7);x.stroke();}
+    else{x.fillStyle='rgba(244,239,231,.7)';x.beginPath();x.arc(c.x,c.y,c.r,0,7);x.fill();
+      // trailing line
+      x.strokeStyle='rgba(244,239,231,.12)';x.beginPath();x.moveTo(c.x,c.y);x.lineTo(c.x-14,c.y);x.stroke();}
+  }
+  // ⊢ stamps at gate on acceptance
+  for(let i=acced.length-1;i>=0;i--){const a=acced[i];a.t++;const k=a.t/40;if(k>1){acced.splice(i,1);continue;}
+    x.fillStyle='rgba(111,191,143,'+(1-k)+')';x.font=(11+k*8)+'px monospace';x.textAlign='center';x.fillText('⊢',a.x,a.y+4);}
+  raf=requestAnimationFrame(loop);
+}
+let raf;
+if(reduce){/* static frame */ x.fillStyle='rgba(244,239,231,.6)';for(let i=0;i<24;i++){x.beginPath();x.arc(Math.random()*gateX,Math.random()*H,2,0,7);x.fill();}}
+else raf=requestAnimationFrame(loop);
+})();
+</script></body></html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 12 · slow corruption</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{margin:0;background:#0c0c0e;overflow:hidden}
+#c{position:fixed;inset:0;display:block}
+.eyebrow{position:fixed;top:6vh;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.1em;color:#8a8478}
+.eyebrow b{color:#f4efe7;font-weight:500}
+.hint{position:fixed;bottom:5vh;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:11px;color:#3f3d38;letter-spacing:.06em}
+</style></head><body>
+<canvas id=c></canvas>
+<div class=eyebrow><b>Tadd Mao</b> · Math &amp; CS · University of Toronto</div>
+<div class=hint>◦ inspect it</div>
+<script>
+(function(){
+const cv=document.getElementById('c'),x=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let W,H,DPR,P=[];
+const mouse={x:-9999,y:-9999,in:false};
+function sampleHomes(text,fsCap){
+  const o=document.createElement('canvas'),oc=o.getContext('2d');o.width=W;o.height=H;
+  oc.fillStyle='#fff';oc.textAlign='center';oc.textBaseline='middle';
+  let fs=Math.min(W*0.16,fsCap);oc.font='700 '+fs+"px 'Fraunces',Georgia,serif";
+  while(oc.measureText(text).width>W*0.86&&fs>10){fs-=2;oc.font='700 '+fs+"px 'Fraunces',Georgia,serif";}
+  oc.fillText(text,W/2,H/2);
+  const d=oc.getImageData(0,0,W,H).data, gap=Math.max(4,Math.round(W/440)),pts=[];
+  for(let y=0;y<H;y+=gap)for(let px=0;px<W;px+=gap){if(d[(y*W+px)*4+3]>128)pts.push([px,y]);}
+  return pts;
+}
+function build(){
+  DPR=Math.min(devicePixelRatio||1,2);W=cv.clientWidth=innerWidth;H=cv.clientHeight=innerHeight;
+  cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0);
+  const homes=sampleHomes('Tadd Mao',150);
+  P=homes.map(([hx,hy])=>({hx,hy,x:hx,y:hy,vx:0,vy:0,ph:Math.random()*6.28,
+    // each particle has a hidden "wrong" destination + shape it drifts toward as corruption grows
+    wx:hx+(Math.random()-.5)*W*0.5, wy:hy+(Math.random()-.5)*H*0.7,
+    spin:Math.random()*6.28, spd:(Math.random()-.5)*0.06, shp:(Math.random()*4)|0, sz:1.6+Math.random()*0.6}));
+}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(build); build();
+addEventListener('resize',build);
+addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;mouse.in=true;});
+addEventListener('pointerleave',()=>mouse.in=false);
+// GLOBAL corruption level 0..1. Rises ONLY while actively inspecting (cursor near the wordmark), VERY slowly.
+// Heals when you leave. ~30s of sustained inspection to fully degrade.
+let corr=0, t=0, engaged=0;
+const RISE=1/(30*60);   // 30s at 60fps to reach 1
+const HEAL=1/(8*60);    // ~8s to heal
+function shape(px,py,r,kind,rot){
+  x.beginPath();
+  if(kind===0){x.arc(px,py,r,0,6.28);}                       // dot
+  else if(kind===1){ // jagged triangle
+    for(let i=0;i<3;i++){const a=rot+i/3*6.28;const rr=r*(1.6+Math.sin(a*3)*0.5);i?x.lineTo(px+Math.cos(a)*rr,py+Math.sin(a)*rr):x.moveTo(px+Math.cos(a)*rr,py+Math.sin(a)*rr);}x.closePath();}
+  else if(kind===2){ // spiky star
+    for(let i=0;i<10;i++){const a=rot+i/10*6.28;const rr=r*(i%2?2.4:0.7);i?x.lineTo(px+Math.cos(a)*rr,py+Math.sin(a)*rr):x.moveTo(px+Math.cos(a)*rr,py+Math.sin(a)*rr);}x.closePath();}
+  else{ // broken cross / glyph-ish
+    x.rect(px-r*1.8,py-r*0.4,r*3.6,r*0.8);x.rect(px-r*0.4,py-r*1.8,r*0.8,r*3.6);}
+  x.fill();
+}
+function frame(){
+  t++;
+  // are we "inspecting"? cursor within the wordmark's bounding band
+  let near=false;
+  if(mouse.in && mouse.y>H*0.30 && mouse.y<H*0.70) near=true;
+  engaged += near? (engaged<1?0.04:0) : (engaged>0?-0.04:0); engaged=Math.max(0,Math.min(1,engaged));
+  corr += near? RISE : -HEAL; corr=Math.max(0,Math.min(1,corr));
+  const ease=corr*corr*(3-2*corr); // smoothstep for smoothness
+  x.fillStyle='rgba(12,12,14,0.32)';x.fillRect(0,0,W,H); // gentle trails
+  for(const p of P){
+    // LIGHT-TEST behavior (always on, subtle): local cursor repulsion like #7 — this is the "looks fine" interaction
+    let ax=0,ay=0;
+    if(mouse.in){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy,R=110;
+      if(d2<R*R){const d=Math.sqrt(d2)||1,f=(1-d/R)*1.4;ax+=dx/d*f;ay+=dy/d*f;}}
+    // home target drifts from true home -> hidden 'wrong' home as corruption accumulates
+    const tx=p.hx+(p.wx-p.hx)*ease, ty=p.hy+(p.wy-p.hy)*ease;
+    ax+=(tx-p.x)*0.014; ay+=(ty-p.y)*0.014;
+    // idle shimmer + corruption-driven chaotic wander
+    ax+=Math.cos(t*0.02+p.ph)*0.05 + (Math.random()-.5)*ease*1.6;
+    ay+=Math.sin(t*0.02+p.ph)*0.05 + (Math.random()-.5)*ease*1.6;
+    p.vx=(p.vx+ax)*0.85; p.vy=(p.vy+ay)*0.85; p.x+=p.vx; p.y+=p.vy;
+    // appearance: dot -> weird shape as corruption grows; color drains warm->sickly
+    p.spin+=p.spd*(0.3+ease*3);
+    const kind = ease<0.25?0 : (p.shp===0?0:p.shp); // stay dots until some corruption
+    const r=p.sz*(1+ease*1.4);
+    const cr=Math.round(244-90*ease), cg=Math.round(239-150*ease), cb=Math.round(231-150*ease);
+    const alpha=0.9;
+    x.fillStyle='rgba('+cr+','+cg+','+cb+','+alpha+')';
+    shape(p.x,p.y,r,ease<0.25?0:kind,p.spin);
+  }
+  raf=requestAnimationFrame(frame);
+}
+let raf;
+if(reduce){ // static clean name
+  const o=sampleHomes('Tadd Mao',150);x.fillStyle='#f4efe7';for(const[hx,hy]of o){x.beginPath();x.arc(hx,hy,1.8,0,6.28);x.fill();}
+} else raf=requestAnimationFrame(frame);
+})();
+</script></body></html>

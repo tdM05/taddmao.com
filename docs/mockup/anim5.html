@@ -1,0 +1,95 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 5 · Autoformalize</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{margin:0;background:#0f0f11;color:#f4efe7;font-family:'Inter',sans-serif;overflow:hidden}
+.stage{position:relative;height:100vh;min-height:560px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 6vw}
+.corner{position:absolute;top:5vh;left:7vw;font-family:'JetBrains Mono',monospace;font-size:12px;color:#8a8478;letter-spacing:.06em}
+.corner b{color:#f4efe7;font-weight:500}
+.card{width:min(760px,92vw)}
+.nl{font-family:'Fraunces',serif;font-size:clamp(22px,3.4vw,34px);line-height:1.35;text-align:center;min-height:2.6em;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.28em}
+.nl .w{transition:color .3s, background .3s;padding:0 .05em;border-radius:4px;color:#e9e3d8}
+.arrow{font-family:'JetBrains Mono',monospace;color:#6a655c;text-align:center;font-size:20px;margin:14px 0;opacity:.5}
+.lean{font-family:'JetBrains Mono',monospace;font-size:clamp(14px,1.9vw,19px);line-height:1.7;background:#161619;border:1px solid #2a2a2e;border-radius:10px;padding:20px 24px;white-space:pre-wrap}
+.lean .tok{transition:color .3s,background .3s;border-radius:4px;padding:0 2px}
+.kw{color:#c9a96a}.ty{color:#7fa9c9}.op{color:#c78a92}.df{color:#e9e3d8}
+.status{height:28px;margin-top:16px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:14px;color:#6fbf8f;opacity:0;transition:opacity .4s}
+.hl{background:rgba(230,169,176,.22);color:#fff !important}
+.checked{box-shadow:0 0 0 1px rgba(111,191,143,.5),0 0 40px rgba(111,191,143,.12);border-color:rgba(111,191,143,.4)!important}
+.dots{position:absolute;bottom:5vh;display:flex;gap:8px}
+.dots i{width:7px;height:7px;border-radius:50%;background:#3a3a3e;transition:background .3s}
+.dots i.on{background:#c9a96a}
+</style></head><body>
+<div class=stage>
+  <div class=corner><b>Tadd Mao</b> · AI verification · University of Toronto</div>
+  <div class=card>
+    <div class=nl id=nl></div>
+    <div class=arrow>&#8595;&nbsp; formalize &nbsp;&#8595;</div>
+    <div class=lean id=lean></div>
+    <div class=status id=status>&#8866; goals accomplished</div>
+  </div>
+  <div class=dots id=dots></div>
+</div>
+<script>
+(function(){
+// each example: NL words (some grouped by 'g' id), Lean tokens (class + optional 'g' to match)
+const EX=[
+ {
+  nl:[['The',0],['sum of',1],['two ',0],['even numbers',2],['is ',0],['even','2b']],
+  lean:[['theorem','kw'],[' even_add_even',' df'],[' (a b : ','df'],['ℤ','ty'],[')','df'],['\n  (ha : ','df'],['Even a','op','2'],[') (hb : ','df'],['Even b','op','2'],[')\n  : ','df'],['Even (a + b)','op','2b']],
+ },
+ {
+  nl:[['Things',0],['equal to the same thing',3],['are ',0],['equal to one another',3.5]],
+  lean:[['theorem','kw'],[' cn1',' df'],[' (a b c : ','df'],['ℝ','ty'],[')\n  (h₁ : ','df'],['a = c','op','3'],[') (h₂ : ','df'],['b = c','op','3'],[')\n  : ','df'],['a = b','op','3.5']],
+ },
+ {
+  nl:[['Every',0],['natural number',4],['has a ',0],['successor',5]],
+  lean:[['theorem','kw'],[' succ',' df'],['\n  : ∀ n : ','df'],['ℕ','ty','4'],[', ∃ m, ','df'],['m = n + 1','op','5']],
+ }
+];
+const nlEl=document.getElementById('nl'),leanEl=document.getElementById('lean'),statusEl=document.getElementById('status'),dotsEl=document.getElementById('dots');
+EX.forEach((_,i)=>{const d=document.createElement('i');if(i===0)d.className='on';dotsEl.appendChild(d);});
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let ei=-1;
+function render(ex){
+  nlEl.innerHTML='';leanEl.innerHTML='';statusEl.style.opacity=0;leanEl.classList.remove('checked');
+  ex.nl.forEach(w=>{const s=document.createElement('span');s.className='w';s.textContent=w[0];s.dataset.g=w[1];nlEl.appendChild(s);});
+  ex.lean.forEach(tk=>{const s=document.createElement('span');s.className='tok '+(tk[1]||'df');s.textContent=tk[0];if(tk[2]!=null)s.dataset.g=tk[2];leanEl.appendChild(s);});
+}
+function groups(el){const m={};el.querySelectorAll('[data-g]').forEach(n=>{(m[n.dataset.g]=m[n.dataset.g]||[]).push(n);});return m;}
+async function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+async function play(){
+  while(true){
+    ei=(ei+1)%EX.length;
+    [...dotsEl.children].forEach((d,i)=>d.className=i===ei?'on':'');
+    const ex=EX[ei];render(ex);
+    // reveal NL
+    const ws=[...nlEl.children];ws.forEach(w=>w.style.opacity=0);
+    for(const w of ws){w.style.transition='opacity .25s';w.style.opacity=1;await sleep(reduce?0:70);}
+    await sleep(reduce?200:650);
+    // reveal lean tokens
+    const tks=[...leanEl.children];tks.forEach(t=>t.style.opacity=0);
+    for(const t of tks){t.style.transition='opacity .18s';t.style.opacity=1;await sleep(reduce?0:34);}
+    await sleep(reduce?150:450);
+    // show correspondences: for each matching group id, pulse NL + lean together
+    if(!reduce){
+      const gN=groups(nlEl),gL=groups(leanEl);
+      const ids=Object.keys(gL).filter(id=>gN[id]);
+      for(const id of ids){
+        (gN[id]||[]).forEach(n=>n.classList.add('hl'));(gL[id]||[]).forEach(n=>n.classList.add('hl'));
+        await sleep(520);
+        (gN[id]||[]).forEach(n=>n.classList.remove('hl'));(gL[id]||[]).forEach(n=>n.classList.remove('hl'));
+        await sleep(140);
+      }
+    }
+    // verified
+    leanEl.classList.add('checked');statusEl.style.opacity=1;
+    await sleep(reduce?600:1900);
+    // fade out
+    nlEl.style.transition=leanEl.style.transition='opacity .5s';nlEl.style.opacity=0;leanEl.style.opacity=0;statusEl.style.opacity=0;
+    await sleep(600);nlEl.style.opacity=1;leanEl.style.opacity=1;
+  }
+}
+play();
+})();
+</script></body></html>

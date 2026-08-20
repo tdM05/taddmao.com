@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Concept C · Gallery</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Spectral:wght@400;500;600&display=swap" rel=stylesheet><style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#eceae5;color:#1c1a17;font-family:'Inter',sans-serif;line-height:1.6}
+.hero{padding:12vh 6vw 6vh;max-width:1100px;margin:0 auto}
+.hero h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(40px,7vw,80px);line-height:1;letter-spacing:-.02em}
+.hero p{font-size:19px;color:#4a453d;margin-top:18px;max-width:44ch}.hero p b{color:#7a1e28;font-weight:600}
+.grid{max-width:1100px;margin:0 auto 10vh;padding:0 6vw;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:150px;gap:12px}
+.tile{border-radius:8px;padding:16px;color:#fff;display:flex;flex-direction:column;justify-content:flex-end;text-decoration:none;position:relative;overflow:hidden}
+.tile .k{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+.tile h3{font-family:'Fraunces',serif;font-size:20px;font-weight:600}
+.big{grid-column:span 2;grid-row:span 2}.wide{grid-column:span 2}
+.t-research{background:linear-gradient(135deg,#7a1e28,#3a1216)}
+.t-art{background:linear-gradient(135deg,#4a5240,#2a2e22)}
+.t-music{background:linear-gradient(135deg,#2f4858,#1a2730)}
+.t-apps{background:linear-gradient(135deg,#5a4a2a,#2e2617)}
+.t-cv{background:#1c1a17}
+@media(max-width:700px){.grid{grid-template-columns:1fr 1fr}.big{grid-column:span 2}}
+</style></head><body>
+<div class=hero><h1>Tadd Mao</h1><p>Math &amp; CS at Toronto working on <b>AI verification</b> — pianist, violinist, and artist.</p></div>
+<div class=grid>
+<a class="tile big t-research" href="#"><span class=k>Research ⊢</span><h3>AI verification &amp; faithful formalization</h3></a>
+<a class="tile wide t-art" href="#"><span class=k>Art</span><h3>Sketches · digital · 3D</h3></a>
+<a class="tile t-music" href="#"><span class=k>Music</span><h3>Piano &amp; violin</h3></a>
+<a class="tile t-apps" href="#"><span class=k>Apps</span><h3>Things I built</h3></a>
+<a class="tile wide t-cv" href="#"><span class=k>Document</span><h3>Curriculum Vitae ↓</h3></a>
+</div></body></html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 18 · clean, reveal on interact</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{margin:0;background:#080a0d;overflow:hidden}
+#c{position:fixed;inset:0;display:block}
+.eyebrow{position:fixed;top:6vh;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:300;letter-spacing:.24em;color:#5a6b74;text-transform:uppercase}
+.subtitle{position:fixed;left:0;right:0;top:calc(50% + clamp(48px,7.5vw,96px));z-index:2;text-align:center;
+  font-family:'JetBrains Mono',monospace;font-weight:300;font-size:clamp(12px,1.5vw,15px);letter-spacing:.3em;color:#6f8b96;text-transform:uppercase;opacity:0;transition:opacity 1.8s ease 1s}
+.subtitle.in{opacity:1}
+</style></head><body>
+<canvas id=c></canvas>
+<div class=eyebrow>Math &amp; CS · University of Toronto</div>
+<div class=subtitle id=sub>AI&nbsp;Verification&nbsp;Research</div>
+<script>
+(function(){
+const cv=document.getElementById('c'),x=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let W,H,DPR,P=[];
+const mouse={x:-9999,y:-9999,in:false};
+function sample(){
+  const o=document.createElement('canvas'),oc=o.getContext('2d');
+  o.width=Math.round(W*DPR);o.height=Math.round(H*DPR);oc.scale(DPR,DPR);
+  oc.fillStyle='#fff';oc.textAlign='center';oc.textBaseline='middle';
+  let fs=Math.min(W*0.125,140);
+  oc.font='500 '+fs+"px 'Inter',system-ui,sans-serif";
+  while(oc.measureText('Tadd Mao').width>W*0.8&&fs>10){fs-=2;oc.font='500 '+fs+"px 'Inter',sans-serif";}
+  oc.fillText('Tadd Mao',W/2,H*0.5);
+  const img=oc.getImageData(0,0,o.width,o.height).data;
+  const gap=Math.max(2,Math.round(2.4*DPR));   // dense -> reads as solid text at rest
+  P=[];
+  // mechanical: homes snap to a precise grid (no jitter) -> clean, ordered edges.
+  // edge softness comes from per-pixel coverage (alpha/size), not random offsets.
+  for(let y=0;y<o.height;y+=gap)for(let px=0;px<o.width;px+=gap){
+    const cov=img[(y*o.width+px)*4+3]/255;     // pixel coverage = how "inside" the glyph
+    if(cov>0.30){
+      const hx=px/DPR, hy=y/DPR;               // exact grid position
+      const edge=Math.min(1,(cov-0.30)/0.55);  // 0 at rim .. 1 well inside
+      P.push({hx,hy,x:hx,y:hy,vx:0,vy:0,ph:Math.random()*6.28,
+        sz:(0.6+Math.random()*0.35)*(0.65+0.35*edge), cov:0.4+0.6*edge,
+        born:Math.random()*0.5,ex:0});
+    }
+  }
+}
+function build(){DPR=Math.min(devicePixelRatio||1,2);W=cv.clientWidth=innerWidth;H=cv.clientHeight=innerHeight;cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0);sample();}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(build);build();
+addEventListener('resize',build);
+addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;mouse.in=true;});
+addEventListener('pointerleave',()=>mouse.in=false);
+let t=0,intro=0;
+function frame(){
+  t++; intro=Math.min(1,intro+0.01);
+  x.fillStyle='rgba(8,10,13,0.30)';x.fillRect(0,0,W,H);
+  x.globalCompositeOperation='lighter';
+  const ie=intro*intro*(3-2*intro);
+  for(const p of P){
+    // at rest: snap firmly to home (mechanical, no drift) -> clean ordered edges
+    let ax=(p.hx-p.x)*0.22, ay=(p.hy-p.y)*0.22;
+    // idle breath only kicks in where excited, so resting text stays perfectly still
+    ax+=Math.cos(t*0.02+p.ph)*0.02*p.ex; ay+=Math.sin(t*0.02+p.ph)*0.02*p.ex;
+    // cursor REVEALS particle nature: pushes them apart -> you see individual points
+    let excite=0;
+    if(mouse.in){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy,R=120;
+      if(d2<R*R){const d=Math.sqrt(d2)||1,k=(1-d/R);excite=k;ax+=dx/d*k*2.6;ay+=dy/d*k*2.6;}}
+    p.ex+=(excite-p.ex)*0.12;
+    p.vx=(p.vx+ax)*0.82; p.vy=(p.vy+ay)*0.82; p.x+=p.vx; p.y+=p.vy;
+    const appear=Math.min(1,Math.max(0,(ie-p.born)/0.5));
+    // when calm: bigger soft overlapping glow (blends to solid). when excited: tighter, brighter, distinct
+    const glowR=(p.sz*(3.6-2.0*p.ex))*appear;
+    // edge particles (low p.cov) fade at rest -> soft antialiased rim; interaction lifts them
+    const coreA=(0.5+0.5*p.ex)*appear*(p.cov+(1-p.cov)*p.ex);
+    const g=x.createRadialGradient(p.x,p.y,0,p.x,p.y,Math.max(0.5,glowR));
+    g.addColorStop(0,'rgba(224,240,250,'+coreA+')');
+    g.addColorStop(0.5,'rgba(150,198,222,'+(coreA*0.35)+')');
+    g.addColorStop(1,'rgba(120,170,200,0)');
+    x.fillStyle=g;x.beginPath();x.arc(p.x,p.y,Math.max(0.5,glowR),0,6.28);x.fill();
+  }
+  x.globalCompositeOperation='source-over';
+  raf=requestAnimationFrame(frame);
+}
+let raf;
+if(reduce){x.globalCompositeOperation='lighter';for(const p of P){const g=x.createRadialGradient(p.hx,p.hy,0,p.hx,p.hy,3);g.addColorStop(0,'rgba(224,240,250,.8)');g.addColorStop(1,'rgba(120,170,200,0)');x.fillStyle=g;x.beginPath();x.arc(p.hx,p.hy,3,0,6.28);x.fill();}}
+else raf=requestAnimationFrame(frame);
+setTimeout(()=>{var e=document.getElementById('sub');if(e)e.classList.add('in');},400);
+})();
+</script></body></html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 17 · soft organic</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{margin:0;background:#080a0d;overflow:hidden}
+#c{position:fixed;inset:0;display:block}
+.eyebrow{position:fixed;top:6vh;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:300;letter-spacing:.24em;color:#5a6b74;text-transform:uppercase}
+.subtitle{position:fixed;left:0;right:0;top:calc(50% + clamp(50px,8vw,100px));z-index:2;text-align:center;
+  font-family:'JetBrains Mono',monospace;font-weight:300;font-size:clamp(12px,1.5vw,15px);letter-spacing:.3em;color:#6f8b96;text-transform:uppercase;opacity:0;transition:opacity 1.8s ease 1s}
+.subtitle.in{opacity:1}
+</style></head><body>
+<canvas id=c></canvas>
+<div class=eyebrow>Math &amp; CS · University of Toronto</div>
+<div class=subtitle id=sub>AI&nbsp;Verification&nbsp;Research</div>
+<script>
+(function(){
+const cv=document.getElementById('c'),x=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let W,H,DPR,P=[];
+const mouse={x:-9999,y:-9999,in:false};
+// smooth value-noise-ish flow field from summed sines (organic drift)
+function flow(px,py,tt){
+  const a=Math.sin(px*0.006+tt*0.0007)+Math.cos(py*0.007-tt*0.0006)+Math.sin((px+py)*0.004+tt*0.0009);
+  return a*Math.PI; // angle
+}
+function sample(){
+  const o=document.createElement('canvas'),oc=o.getContext('2d');
+  o.width=Math.round(W*DPR);o.height=Math.round(H*DPR);oc.scale(DPR,DPR);
+  oc.fillStyle='#fff';oc.textAlign='center';oc.textBaseline='middle';
+  let fs=Math.min(W*0.14,158);
+  oc.font='500 '+fs+"px 'Space Grotesk',system-ui,sans-serif";
+  while(oc.measureText('Tadd Mao').width>W*0.84&&fs>10){fs-=2;oc.font='500 '+fs+"px 'Space Grotesk',sans-serif";}
+  oc.fillText('Tadd Mao',W/2,H*0.5);
+  const img=oc.getImageData(0,0,o.width,o.height).data;
+  const gap=Math.max(3,Math.round(3.4*DPR));
+  P=[];
+  for(let y=0;y<o.height;y+=gap)for(let px=0;px<o.width;px+=gap){
+    if(img[(y*o.width+px)*4+3]>150){
+      const hx=px/DPR, hy=y/DPR;
+      P.push({hx,hy,x:hx+(Math.random()-.5)*W*0.5,y:hy+(Math.random()-.5)*H*0.5,vx:0,vy:0,
+        ph:Math.random()*6.28, sz:0.8+Math.random()*0.9, hue:Math.random(), born:Math.random()*0.6});
+    }
+  }
+}
+function build(){DPR=Math.min(devicePixelRatio||1,2);W=cv.clientWidth=innerWidth;H=cv.clientHeight=innerHeight;cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0);sample();}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(build);build();
+addEventListener('resize',build);
+addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;mouse.in=true;});
+addEventListener('pointerleave',()=>mouse.in=false);
+let t=0,intro=0;
+function frame(){
+  t++; intro=Math.min(1,intro+0.008);
+  // soft fade instead of hard clear -> gentle motion trails, no hard edges
+  x.fillStyle='rgba(8,10,13,0.22)';x.fillRect(0,0,W,H);
+  x.globalCompositeOperation='lighter';  // additive glow = soft, luminous
+  const ie=intro*intro*(3-2*intro);
+  for(const p of P){
+    // organic flow drift around home
+    const fa=flow(p.x,p.y,t);
+    let ax=Math.cos(fa)*0.10, ay=Math.sin(fa)*0.10;
+    // gentle pull home (loose, so it breathes rather than snaps)
+    ax+=(p.hx-p.x)*0.020; ay+=(p.hy-p.y)*0.020;
+    // soft cursor influence
+    if(mouse.in){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy,R=100;if(d2<R*R){const d=Math.sqrt(d2)||1,f=(1-d/R)*0.5;ax+=dx/d*f;ay+=dy/d*f;}}
+    p.vx=(p.vx+ax)*0.90; p.vy=(p.vy+ay)*0.90; p.x+=p.vx; p.y+=p.vy;
+    const appear=Math.min(1,Math.max(0,(ie-p.born)/0.4));
+    const breathe=0.6+0.4*Math.sin(t*0.03+p.ph*2);
+    const a=(0.28+0.4*breathe)*appear;
+    // soft radial gradient blob (no hard edge). cool white w/ faint teal/blue variance
+    const R=p.sz*3.2*(0.9+0.3*breathe);
+    const g=x.createRadialGradient(p.x,p.y,0,p.x,p.y,R);
+    const teal=p.hue*40;
+    g.addColorStop(0,'rgba('+(200+teal*0.3|0)+',236,246,'+a+')');
+    g.addColorStop(0.4,'rgba(150,200,220,'+(a*0.4)+')');
+    g.addColorStop(1,'rgba(120,170,200,0)');
+    x.fillStyle=g;x.beginPath();x.arc(p.x,p.y,R,0,6.28);x.fill();
+  }
+  x.globalCompositeOperation='source-over';
+  raf=requestAnimationFrame(frame);
+}
+let raf;
+if(reduce){x.globalCompositeOperation='lighter';for(const p of P){const g=x.createRadialGradient(p.hx,p.hy,0,p.hx,p.hy,4);g.addColorStop(0,'rgba(210,236,246,.7)');g.addColorStop(1,'rgba(120,170,200,0)');x.fillStyle=g;x.beginPath();x.arc(p.hx,p.hy,4,0,6.28);x.fill();}}
+else raf=requestAnimationFrame(frame);
+setTimeout(()=>{var e=document.getElementById('sub');if(e)e.classList.add('in');},400);
+})();
+</script></body></html>

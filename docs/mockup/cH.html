@@ -1,0 +1,121 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Concept H · Living construction</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#211f1a;background:#f5f2ec;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:#7a1e28}
+.hero{position:relative;background:#121212;color:#f4efe7;height:82vh;min-height:520px;overflow:hidden;display:flex;align-items:center}
+#c{position:absolute;inset:0;width:100%;height:100%;z-index:1;cursor:crosshair}
+.hero .txt{position:relative;z-index:2;padding:0 7vw;pointer-events:none}
+.hero .txt *{pointer-events:auto}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.06em;color:#b7a98c}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(46px,9vw,96px);line-height:.96;letter-spacing:-.02em;margin-top:12px;text-shadow:0 2px 40px rgba(18,18,18,.9)}
+.intro{font-size:19px;color:#d6cfc4;margin-top:22px;max-width:46ch;text-shadow:0 2px 24px rgba(18,18,18,.95)}
+.intro b{color:#e6a9b0;font-weight:500}
+.hint{position:absolute;bottom:18px;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6e6a62;letter-spacing:.08em}
+/* body */
+.wrap{max-width:720px;margin:0 auto;padding:8vh 6vw}
+.sec{margin-top:48px}.sec:first-child{margin-top:0}
+.sec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
+.sec-h .lbl{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8a7f6a}.sec-h .ln{flex:1;height:1px;background:#ddd6c8}
+.row{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:baseline;padding:12px 0;border-bottom:1px solid #e6e0d3}
+.row .t{font-size:16px}.row .t b{font-weight:600}.row .t .d{color:#6a645a;font-size:14px}
+.row a{font-family:'JetBrains Mono',monospace;font-size:12px;text-decoration:none;color:#7a1e28;white-space:nowrap}
+.beyond{margin-top:14px;font-size:16px;color:#413c33}.beyond a{text-decoration:none;border-bottom:1px solid #d9cfbe}
+.foot{margin-top:56px;padding-top:16px;border-top:1px solid #ddd6c8;font-family:'JetBrains Mono',monospace;font-size:12px;color:#8a7f6a;display:flex;gap:18px;flex-wrap:wrap}.foot a{text-decoration:none}
+</style></head><body>
+<header class=hero>
+  <canvas id=c></canvas>
+  <div class=txt>
+    <div class=eyebrow>Tadd Mao · Math &amp; CS · University of Toronto</div>
+    <h1>Tadd Mao</h1>
+    <p class=intro>I work on <b>AI verification</b> — knowing, with proof rather than trust, that a machine did what we asked.</p>
+  </div>
+  <div class=hint>move your cursor — it's a compass ✕</div>
+</header>
+<div class=wrap>
+  <div class=sec><div class=sec-h><span class=lbl>Research</span><span class=ln></span></div>
+    <div class=row><span class=t><b>Faithful formalization of mathematics</b> <span class=d>— first author, under review at AAAI-27</span></span><a href="#">arXiv ↗</a></div>
+    <div class=row><span class=t><b>Formalizing Euclid's <i>Elements</i> in Lean</b> <span class=d>— NSERC, with X. Si</span></span><a href="#">in progress</a></div>
+    <div class=row><span class=t><b>A merged proof in Mathlib</b> <span class=d>— Lean's core library</span></span><a href="#">PR #39435 ↗</a></div>
+  </div>
+  <div class=sec><div class=sec-h><span class=lbl>Beyond</span><span class=ln></span></div>
+    <p class=beyond>I also play <a href="#">piano and violin</a> (Rachmaninoff No. 2 with orchestra), and make <a href="#">art</a> — sketches, digital, and 3D. A few <a href="#">things I've built</a>, too.</p></div>
+  <div class=foot><span>taddmao [at] gmail [dot] com</span><a href="#">github/tdM05</a><a href="#">CV ↓</a></div>
+</div>
+<script>
+(function(){
+  const cv=document.getElementById('c'), ctx=cv.getContext('2d');
+  const reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  let W,H,DPR;
+  function size(){DPR=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}
+  size(); addEventListener('resize',size);
+
+  // drifting points on the construction plane
+  const N=Math.max(14,Math.min(30,Math.round(W/60)));
+  const pts=[]; for(let i=0;i<N;i++){pts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25});}
+  const mouse={x:-999,y:-999,on:false};
+  cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();mouse.x=e.clientX-r.left;mouse.y=e.clientY-r.top;mouse.on=true;});
+  cv.addEventListener('pointerleave',()=>mouse.on=false);
+
+  const proofs=[]; // brief "proven" triangle flashes {a,b,c,t}
+  let lastTri=0;
+  const LINK=150;      // distance for construction lines
+  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+
+  function step(now){
+    ctx.clearRect(0,0,W,H);
+    // move
+    for(const p of pts){
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>W)p.vx*=-1; if(p.y<0||p.y>H)p.vy*=-1;
+      p.x=Math.max(0,Math.min(W,p.x));p.y=Math.max(0,Math.min(H,p.y));
+    }
+    // faint construction segments between near points
+    ctx.lineWidth=1;
+    for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){
+      const d=dist(pts[i],pts[j]); if(d<LINK){
+        const a=(1-d/LINK)*0.22;
+        ctx.strokeStyle='rgba(200,192,178,'+a+')';
+        ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();
+      }
+    }
+    // cursor = compass: arcs + active construction to nearby points
+    if(mouse.on){
+      const near=pts.map(p=>({p,d:dist(p,mouse)})).filter(o=>o.d<190).sort((a,b)=>a.d-b.d).slice(0,4);
+      for(const o of near){
+        ctx.strokeStyle='rgba(230,169,176,'+(1-o.d/190)*0.6+')';
+        ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(mouse.x,mouse.y);ctx.lineTo(o.p.x,o.p.y);ctx.stroke();
+        // compass arc around cursor through the point
+        ctx.strokeStyle='rgba(150,143,132,0.25)';ctx.lineWidth=1;
+        ctx.beginPath();ctx.arc(mouse.x,mouse.y,o.d,0,Math.PI*2);ctx.stroke();
+      }
+      // occasionally "prove" a triangle among the 3 nearest
+      if(near.length>=3 && now-lastTri>1100){
+        lastTri=now; proofs.push({a:near[0].p,b:near[1].p,c:near[2].p,t:now});
+      }
+    }
+    // draw + expire proofs (triangle blooms oxblood, stamps ∎)
+    for(let k=proofs.length-1;k>=0;k--){
+      const pr=proofs[k], age=(now-pr.t)/1400; if(age>1){proofs.splice(k,1);continue;}
+      const fade=Math.sin(age*Math.PI); // in then out
+      ctx.beginPath();ctx.moveTo(pr.a.x,pr.a.y);ctx.lineTo(pr.b.x,pr.b.y);ctx.lineTo(pr.c.x,pr.c.y);ctx.closePath();
+      ctx.fillStyle='rgba(122,30,40,'+fade*0.20+')';ctx.fill();
+      ctx.strokeStyle='rgba(230,169,176,'+fade*0.7+')';ctx.lineWidth=1.4;ctx.stroke();
+      const cx=(pr.a.x+pr.b.x+pr.c.x)/3, cy=(pr.a.y+pr.b.y+pr.c.y)/3;
+      ctx.fillStyle='rgba(230,169,176,'+fade+')';ctx.font='13px monospace';ctx.textAlign='center';ctx.fillText('∎',cx,cy+4);
+    }
+    // points
+    for(const p of pts){ctx.fillStyle='rgba(244,239,231,0.85)';ctx.beginPath();ctx.arc(p.x,p.y,1.8,0,Math.PI*2);ctx.fill();}
+    // cursor point
+    if(mouse.on){ctx.fillStyle='#e6a9b0';ctx.beginPath();ctx.arc(mouse.x,mouse.y,3,0,Math.PI*2);ctx.fill();}
+    raf=requestAnimationFrame(step);
+  }
+  let raf;
+  if(reduce){ // static: draw one calm frame
+    for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){const d=dist(pts[i],pts[j]);if(d<LINK){ctx.strokeStyle='rgba(200,192,178,'+(1-d/LINK)*0.22+')';ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();}}
+    for(const p of pts){ctx.fillStyle='rgba(244,239,231,0.85)';ctx.beginPath();ctx.arc(p.x,p.y,1.8,0,7);ctx.fill();}
+  } else { raf=requestAnimationFrame(step); }
+})();
+</script>
+</body></html>

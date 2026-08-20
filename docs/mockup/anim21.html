@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 21 · H reskinned</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{margin:0;background:#0a0b0e;color:#e8eef4;font-family:'Inter',system-ui,sans-serif;line-height:1.6}
+a{color:#8fc7dc}
+.hero{position:relative;height:100vh;min-height:560px;display:flex;align-items:center;overflow:hidden}
+#c{position:absolute;inset:0;z-index:1;cursor:crosshair}
+.txt{position:relative;z-index:2;padding:0 7vw;pointer-events:none}
+.txt *{pointer-events:auto}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:300;letter-spacing:.24em;color:#5f7d8a;text-transform:uppercase}
+h1{font-family:'Inter',sans-serif;font-weight:600;font-size:clamp(52px,10vw,120px);line-height:.98;letter-spacing:-.02em;margin-top:14px;color:#f2f6fb;text-shadow:0 4px 60px #0a0b0e}
+.sub{font-family:'JetBrains Mono',monospace;font-weight:300;font-size:clamp(12px,1.6vw,16px);letter-spacing:.28em;text-transform:uppercase;color:#7fa4b3;margin-top:22px}
+.hint{position:absolute;bottom:5vh;left:7vw;z-index:2;font-family:'JetBrains Mono',monospace;font-size:11px;color:#3c4650;letter-spacing:.06em}
+</style></head><body>
+<div class=hero>
+  <canvas id=c></canvas>
+  <div class=txt>
+    <div class=eyebrow>Math &amp; CS · University of Toronto</div>
+    <h1>Tadd&nbsp;Mao</h1>
+    <div class=sub>AI&nbsp;Verification&nbsp;Research</div>
+  </div>
+  <div class=hint>◦ move your cursor</div>
+</div>
+<script>
+(function(){
+const cv=document.getElementById('c'),x=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let W,H,DPR;
+function size(){DPR=Math.min(devicePixelRatio||1,2);W=cv.clientWidth=cv.parentElement.clientWidth;H=cv.clientHeight=cv.parentElement.clientHeight;cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0);}
+size();addEventListener('resize',size);
+const N=Math.max(14,Math.min(30,Math.round(W/60)));
+const pts=[];for(let i=0;i<N;i++)pts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25});
+const mouse={x:-999,y:-999,on:false};
+cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();mouse.x=e.clientX-r.left;mouse.y=e.clientY-r.top;mouse.on=true;});
+cv.addEventListener('pointerleave',()=>mouse.on=false);
+const proofs=[];let lastTri=0;const LINK=150;const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+// #19 palette
+const C_LINE='150,180,200', C_PT='200,224,240', C_ARC='120,150,170', C_ACC='150,205,225';
+function step(now){
+  x.clearRect(0,0,W,H);
+  for(const p of pts){p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;p.x=Math.max(0,Math.min(W,p.x));p.y=Math.max(0,Math.min(H,p.y));}
+  x.lineWidth=1;
+  for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){const d=dist(pts[i],pts[j]);if(d<LINK){const a=(1-d/LINK)*0.16;x.strokeStyle='rgba('+C_LINE+','+a+')';x.beginPath();x.moveTo(pts[i].x,pts[i].y);x.lineTo(pts[j].x,pts[j].y);x.stroke();}}
+  if(mouse.on){
+    const near=pts.map(p=>({p,d:dist(p,mouse)})).filter(o=>o.d<190).sort((a,b)=>a.d-b.d).slice(0,4);
+    for(const o of near){
+      x.strokeStyle='rgba('+C_ACC+','+(1-o.d/190)*0.55+')';x.lineWidth=1.2;x.beginPath();x.moveTo(mouse.x,mouse.y);x.lineTo(o.p.x,o.p.y);x.stroke();
+      x.strokeStyle='rgba('+C_ARC+',0.22)';x.lineWidth=1;x.beginPath();x.arc(mouse.x,mouse.y,o.d,0,Math.PI*2);x.stroke();
+    }
+    if(near.length>=3 && now-lastTri>1100){lastTri=now;proofs.push({a:near[0].p,b:near[1].p,c:near[2].p,t:now});}
+  }
+  for(let k=proofs.length-1;k>=0;k--){const pr=proofs[k],age=(now-pr.t)/1400;if(age>1){proofs.splice(k,1);continue;}const fade=Math.sin(age*Math.PI);
+    x.beginPath();x.moveTo(pr.a.x,pr.a.y);x.lineTo(pr.b.x,pr.b.y);x.lineTo(pr.c.x,pr.c.y);x.closePath();
+    x.fillStyle='rgba('+C_ACC+','+fade*0.08+')';x.fill();x.strokeStyle='rgba('+C_ACC+','+fade*0.55+')';x.lineWidth=1.4;x.stroke();
+    const cx=(pr.a.x+pr.b.x+pr.c.x)/3,cy=(pr.a.y+pr.b.y+pr.c.y)/3;x.fillStyle='rgba('+C_ACC+','+fade+')';x.font='13px monospace';x.textAlign='center';x.fillText('∎',cx,cy+4);}
+  for(const p of pts){x.fillStyle='rgba('+C_PT+',0.7)';x.beginPath();x.arc(p.x,p.y,1.6,0,Math.PI*2);x.fill();}
+  if(mouse.on){x.fillStyle='rgba('+C_ACC+',0.95)';x.beginPath();x.arc(mouse.x,mouse.y,3,0,Math.PI*2);x.fill();}
+  raf=requestAnimationFrame(step);
+}
+let raf;
+if(reduce){for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){const d=dist(pts[i],pts[j]);if(d<LINK){x.strokeStyle='rgba('+C_LINE+','+(1-d/LINK)*0.16+')';x.beginPath();x.moveTo(pts[i].x,pts[i].y);x.lineTo(pts[j].x,pts[j].y);x.stroke();}}for(const p of pts){x.fillStyle='rgba('+C_PT+',0.7)';x.beginPath();x.arc(p.x,p.y,1.6,0,7);x.fill();}}
+else raf=requestAnimationFrame(step);
+})();
+</script></body></html>

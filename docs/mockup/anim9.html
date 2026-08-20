@@ -1,0 +1,107 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Anim 9 · Spreading corruption</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel=stylesheet>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{margin:0;background:#0d0d0f;color:#f4efe7;font-family:'Inter',sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:#e6a9b0}
+.hero{min-height:96vh;display:flex;flex-direction:column;justify-content:center;padding:0 7vw;position:relative}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.1em;color:#8a8478}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(52px,11vw,140px);line-height:.94;letter-spacing:-.02em;margin:14px 0 0}
+.tag{font-size:clamp(19px,2.4vw,26px);color:#cfc8bd;margin-top:26px;max-width:40ch}
+.tag .seed{color:#f4efe7;font-weight:500}
+.hint{position:absolute;bottom:5vh;left:7vw;font-family:'JetBrains Mono',monospace;font-size:11px;color:#48463f;letter-spacing:.06em}
+.body{max-width:720px;margin:0 auto;padding:6vh 6vw 14vh}
+.sec-h{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8a8478;border-bottom:1px solid #26261f;padding-bottom:8px;margin-bottom:6px}
+.row{padding:12px 0;border-bottom:1px solid #1c1c22;font-size:16px}
+.ch{display:inline-block;white-space:pre;will-change:transform,text-shadow}
+</style></head><body>
+<section class=hero>
+  <div class="eyebrow corr">Math &amp; CS · University of Toronto</div>
+  <h1 class=corr>Tadd Mao</h1>
+  <p class=tag>I work on <span class="seed corr">AI&nbsp;verification</span> — knowing, with proof rather than trust, what a machine actually did.</p>
+  <div class=hint>◦ hover the words</div>
+</section>
+<section class=body>
+  <div class="sec-h corr">Research</div>
+  <div class="row corr">Faithful formalization of mathematics — first author, under review at AAAI-27.</div>
+  <div class="row corr">Formalizing Euclid's Elements in Lean, with Prof. Xujie Si.</div>
+  <div class="row corr">A merged proof in Mathlib, Lean's core library.</div>
+</section>
+<script>
+(function(){
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const GL='█▓▒░╳#%&@∅⊥¬≠∂λ⊢∫§¤◊×'.split('');
+let chars=[]; // {el, orig, cx, cy, infl, seed}
+function splitAll(){
+  chars=[];
+  document.querySelectorAll('.corr').forEach(host=>{
+    const seed=host.classList.contains('seed');
+    const text=host.textContent; host.textContent='';
+    for(const c of text){
+      const s=document.createElement('span');s.className='ch';s.textContent=c;s.dataset.o=c;
+      host.appendChild(s);
+      chars.push({el:s,orig:c,infl:0,seed,cx:0,cy:0});
+    }
+  });
+  measure();
+}
+function measure(){for(const c of chars){const r=c.el.getBoundingClientRect();c.cx=r.left+r.width/2;c.cy=r.top+r.height/2;}}
+splitAll();
+addEventListener('resize',()=>{ // rebuild positions (text already split)
+  for(const c of chars){c.el.style.transform='';c.el.style.textShadow='';c.el.style.color='';c.el.textContent=c.orig;}
+  measure();
+});
+addEventListener('scroll',measure,{passive:true});
+const mouse={x:-9999,y:-9999,in:false};
+addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;mouse.in=true;});
+addEventListener('pointerleave',()=>mouse.in=false);
+
+const SEED_R=46, SPREAD_R=64;
+let t=0;
+function frame(){
+  t++;
+  // 1) seed: cursor over a SEED char feeds it
+  if(mouse.in){
+    for(const c of chars){ if(!c.seed)continue;
+      const dx=c.cx-mouse.x,dy=c.cy-mouse.y;
+      if(dx*dx+dy*dy<SEED_R*SEED_R) c.infl=Math.min(1,c.infl+0.06);
+    }
+  }
+  // 2) spread: infected chars raise nearby chars (every 2nd frame for perf)
+  if(t%2===0){
+    const hot=chars.filter(c=>c.infl>0.25);
+    for(const h of hot){
+      for(const c of chars){ if(c===h||c.infl>=h.infl)continue;
+        const dx=c.cx-h.cx,dy=c.cy-h.cy,d2=dx*dx+dy*dy;
+        if(d2<SPREAD_R*SPREAD_R){ c.infl=Math.min(1,c.infl+h.infl*0.02*(1-Math.sqrt(d2)/SPREAD_R)); }
+      }
+    }
+  }
+  // 3) heal (so it recovers when you stop feeding) — slower than spread so it can cascade while hovering
+  for(const c of chars){ c.infl=Math.max(0, c.infl-0.004); }
+  // 4) render
+  for(const c of chars){
+    const s=c.infl;
+    if(s<0.04){ if(c.el.dataset.dirty){c.el.style.transform='';c.el.style.textShadow='';c.el.style.color='';c.el.textContent=c.orig;c.el.dataset.dirty='';} continue; }
+    c.el.dataset.dirty='1';
+    const jx=(Math.random()-.5)*7*s, jy=(Math.random()-.5)*5*s, sk=(Math.random()-.5)*26*s;
+    c.el.style.transform='translate('+jx.toFixed(1)+'px,'+jy.toFixed(1)+'px) skewX('+sk.toFixed(1)+'deg)';
+    const off=(2.5*s).toFixed(1);
+    // chromatic split -> heavy glitch shadow stack as it worsens
+    let sh='"'; sh=off+'px 0 rgba(255,40,60,'+(0.5*s)+'), -'+off+'px 0 rgba(40,220,255,'+(0.5*s)+')';
+    if(s>0.6) sh+=', 0 0 '+(8*s).toFixed(0)+'px rgba(120,10,20,'+(0.6*s)+')';
+    c.el.style.textShadow=sh;
+    // color drains toward sickly/void
+    const g=Math.round(239-140*s), r=Math.round(244-40*s), b=Math.round(231-150*s);
+    c.el.style.color='rgb('+r+','+g+','+b+')';
+    // glyph corruption
+    if(s>0.28 && Math.random()<s*0.6){
+      c.el.textContent = (s>0.82 && Math.random()<0.5) ? '█' : GL[(Math.random()*GL.length)|0];
+    } else { c.el.textContent=c.orig; }
+  }
+  raf=requestAnimationFrame(frame);
+}
+let raf;
+if(!reduce) raf=requestAnimationFrame(frame);
+})();
+</script></body></html>
