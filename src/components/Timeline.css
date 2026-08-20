@@ -1,4 +1,4 @@
-.timeline-section { padding: 6vh 0 4vh; }
+.timeline-section { padding: 8vh 0 4vh; }
 
 .tl-head {
   max-width: var(--maxw);
@@ -12,109 +12,235 @@
   color: var(--ink-bright);
   margin-top: 10px;
 }
+.tl-legend {
+  display: flex;
+  gap: 20px;
+  margin-top: 18px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.tl-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.tl-legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 
+/* ---- spine ---- */
 .tl {
   position: relative;
-  max-width: var(--maxw);
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 2vh var(--pad-x) 14vh;
+  padding: 3vh var(--pad-x) 12vh;
 }
-
 .tl-spine {
   position: absolute;
   left: 50%;
-  top: 0;
-  bottom: 0;
+  top: 0; bottom: 0;
   width: 2px;
   transform: translateX(-1px);
-  background: linear-gradient(var(--line-soft), var(--line) 15%, var(--line) 85%, var(--line-soft));
+  background: linear-gradient(var(--line-soft), var(--line) 12%, var(--line) 88%, var(--line-soft));
+  z-index: 0;               /* behind the year nodes */
+}
+/* progress bar / playhead — a single fixed colour, distinct from the
+   thread colours (which stay blue/green/sand on the edges). */
+.tl {
+  --bar: 226, 178, 90;   /* warm amber — the "time" colour */
 }
 .tl-fill {
   position: absolute;
-  left: 0; top: 0;
-  width: 100%;
-  height: 0;
-  background: linear-gradient(var(--accent), var(--accent-deep));
-  box-shadow: 0 0 14px rgba(var(--accent-line), 0.5);
+  left: 0; top: 0; width: 100%; height: 0;
+  background: linear-gradient(rgba(var(--bar), 0.25), rgb(var(--bar)));
+  box-shadow: 0 0 10px rgba(var(--bar), 0.5);
+}
+/* playhead glow at the leading tip */
+.tl-fill::after {
+  content: "";
+  position: absolute;
+  left: 50%; bottom: -8px;
+  transform: translateX(-50%);
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(var(--bar)), rgba(var(--bar), 0) 70%);
+  filter: blur(2px);
+  opacity: 0.95;
 }
 
-.tl-node {
+/* ---- one year row ---- */
+.tl-year-row {
   position: relative;
-  width: 50%;
-  padding: 5vh 42px;
+  display: grid;
+  align-items: center;
+  gap: clamp(40px, 7vw, 90px);
+  padding: 4.5vh 0;
   opacity: 0;
-  transform: translateY(30px);
+  transform: translateY(26px);
   transition: opacity 0.7s ease, transform 0.7s ease;
 }
-.tl-node.in { opacity: 1; transform: none; }
-.tl-node.left { left: 0; text-align: right; }
-.tl-node.right { left: 50%; }
+.tl-year-row.in { opacity: 1; transform: none; }
+/* side = which side the ENTRIES sit on. Year node hugs the spine (center). */
+.tl-year-row.right { grid-template-columns: 1fr 1fr; }  /* [year|entries]  entries on right */
+.tl-year-row.left  { grid-template-columns: 1fr 1fr; }  /* [entries|year]  entries on left */
 
-.tl-dot {
-  position: absolute;
-  top: calc(5vh + 8px);
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
+/* year node — sits on the spine (center column edge) */
+.tl-year {
+  justify-self: center;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: rgb(var(--bar));
   background: var(--bg);
-  border: 2px solid var(--accent-deep);
-  box-shadow: 0 0 0 4px var(--bg), 0 0 16px rgba(var(--accent-line), 0.6);
-  transition: background 0.4s;
-}
-.tl-node.in .tl-dot { background: var(--accent); }
-.tl-node.left .tl-dot { right: -8px; }
-.tl-node.right .tl-dot { left: -8px; }
-
-.tl-year { font-size: 12px; letter-spacing: 0.14em; color: var(--accent-deep); }
-.tl-node h3 {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--ink-bright);
-  margin: 4px 0 6px;
-}
-.tl-node p { font-size: 14.5px; color: var(--ink-dim); }
-
-.tl-media {
-  margin-top: 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  overflow: hidden;
-  background: var(--bg-soft);
-}
-.tl-media img { display: block; width: 100%; height: auto; }
-.tl-video { aspect-ratio: 16 / 9; }
-.tl-video iframe { width: 100%; height: 100%; border: 0; display: block; }
-.tl-node.left .tl-media { margin-left: auto; }
-
-.tl-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
-.tl-node.left .tl-tags { justify-content: flex-end; }
-.tl-tag {
-  font-size: 10.5px;
-  letter-spacing: 0.06em;
-  color: var(--accent-deep);
-  border: 1px solid var(--line);
+  padding: 6px 12px;
+  border: 1px solid rgba(var(--bar), 0.4);
   border-radius: 999px;
-  padding: 2px 9px;
+  position: relative;
+  z-index: 2;
+  white-space: nowrap;
+  /* bg halo blends the spine/fill smoothly into the node edge */
+  box-shadow: 0 0 0 6px var(--bg), 0 0 18px 6px var(--bg);
 }
-.tl-link { display: inline-block; margin-top: 10px; font-size: 12px; }
+.tl-year-row.right .tl-year { grid-column: 1; justify-self: end; }
+.tl-year-row.left  .tl-year { grid-column: 2; justify-self: start; }
+
+/* entries column */
+.tl-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+.tl-year-row.right .tl-entries { grid-column: 2; }
+.tl-year-row.left  .tl-entries { grid-column: 1; align-items: flex-end; text-align: right; }
+
+.tl-entry {
+  position: relative;
+  padding: 12px 16px;
+  border: 1px solid var(--line-soft);
+  border-left: 2px solid rgb(var(--tc));
+  border-radius: 8px;
+  background: rgba(var(--tc), 0.04);
+  max-width: 46ch;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.tl-year-row.left .tl-entry { border-left: none; border-right: 2px solid rgb(var(--tc)); }
+.tl-year-row.in .tl-entry { opacity: 1; transform: none; }
+
+.tl-when {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(var(--tc));
+  margin-bottom: 3px;
+}
+.tl-text { font-size: 14.5px; color: var(--ink); }
+
+/* gallery of thumbnails / mini 3D models inside an entry */
+.tl-gallery {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.tl-year-row.left .tl-gallery { justify-content: flex-end; }
+.tl-thumb {
+  margin: 0;
+  width: 96px;
+}
+.tl-thumb img,
+.tl-thumb-model {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: radial-gradient(120% 120% at 50% 30%, #14181f, #0a0b0e);
+}
+.tl-thumb-model { position: relative; cursor: grab; }
+.tl-thumb-model:active { cursor: grabbing; }
+/* click-to-load idle state (no WebGL until clicked) */
+.tl-thumb-idle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--accent-deep);
+  padding: 0;
+}
+.tl-thumb-idle:hover { color: var(--accent); border-color: var(--accent-deep); }
+.tl-thumb-cube { font-size: 26px; }
+.tl-thumb-cta { font-size: 10px; letter-spacing: 0.08em; }
+.tl-thumb-loading {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: var(--ink-faint);
+}
+.tl-thumb figcaption {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  margin-top: 5px;
+  text-align: center;
+}
+
+/* wires overlay */
+.tl-wires {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+}
+/* contact flash — a bright pulse travels along the edge, once, on crossing.
+   CSS-driven so it's independent of scroll speed. */
+.tl-flash {
+  opacity: 0;
+  filter:
+    drop-shadow(0 0 4px rgb(var(--flash-rgb)))
+    drop-shadow(0 0 9px rgba(var(--flash-rgb), 0.7));
+}
+.tl-flash.go {
+  animation: tl-flash-travel 0.95s ease-out;
+}
+@keyframes tl-flash-travel {
+  0%   { opacity: 0;   stroke-dashoffset: 1; }
+  15%  { opacity: 1; }
+  100% { opacity: 0;   stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .tl-flash { display: none; } }
 
 .tl-end {
   text-align: center;
   color: var(--accent-deep);
   font-size: 22px;
-  padding: 2vh 0 4vh;
+  padding: 3vh 0 2vh;
 }
 
-@media (max-width: 720px) {
-  .tl-spine { left: 22px; }
-  .tl-node {
-    width: 100%;
-    left: 0 !important;
-    text-align: left !important;
-    padding-left: 52px;
-    padding-right: 12px;
+/* ---- mobile: single left spine, everything stacks ---- */
+@media (max-width: 760px) {
+  .tl-spine { left: 20px; }
+  .tl-year-row,
+  .tl-year-row.left,
+  .tl-year-row.right {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding-left: 46px;
   }
-  .tl-node .tl-dot { left: 15px !important; right: auto !important; }
-  .tl-node.left .tl-media { margin-left: 0; }
-  .tl-node.left .tl-tags { justify-content: flex-start; }
+  .tl-year-row.right .tl-year,
+  .tl-year-row.left .tl-year {
+    grid-column: 1;
+    justify-self: start;
+    margin-left: -46px;
+  }
+  .tl-year-row.right .tl-entries,
+  .tl-year-row.left .tl-entries {
+    grid-column: 1;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .tl-year-row.left .tl-entry { border-right: none; border-left: 2px solid rgb(var(--tc)); }
+  .tl-wires { display: none; }
 }
