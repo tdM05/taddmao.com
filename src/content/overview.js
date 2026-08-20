@@ -14,7 +14,7 @@ export const fields = [
       {
         title: "First-author paper on AI verification",
         desc:
-          "Under review at AAAI-27 — a way to check that a computer-verified proof really matches the human idea behind it.",
+          "Under review at AAAI-27 — a way to check that a computer-verified proof really matches the human idea behind it. Advised by Ziyang Li (Johns Hopkins) & Xujie Si (Toronto).",
         media: null,
         href: "https://arxiv.org/abs/2608.15432",
         linkText: "read the preprint",
