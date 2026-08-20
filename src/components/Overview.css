@@ -11,6 +11,17 @@
 }
 .ov-inner { max-width: 1180px; margin: 0 auto; }
 
+/* section header — matches the Timeline header */
+.ov-head { margin-bottom: 2vh; }
+.ov-head h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(24px, 3.4vw, 38px);
+  letter-spacing: -0.01em;
+  color: var(--ink-bright);
+  margin-top: 0;
+}
+
 /* one row per field: content | label (or reversed) */
 .ov-row {
   position: relative;
@@ -19,9 +30,7 @@
   align-items: center;
   gap: clamp(50px, 9vw, 130px);   /* room for the wires */
   padding: 8vh 0;
-  border-top: 1px solid var(--line-soft);
 }
-.ov-row:first-of-type { border-top: none; }
 .ov-row.reverse { grid-template-columns: auto 1fr; }
 
 /* SVG overlay carrying the connecting wires */
@@ -56,14 +65,14 @@
 .ov-row.reverse .ov-item { padding-right: 0; padding-left: 20px; }
 
 .ov-item h3 {
-  font-family: var(--font-display);
-  font-size: clamp(22px, 2.6vw, 30px);
+  font-family: var(--font-sans);           /* body font, not display — quieter */
+  font-size: clamp(16px, 1.7vw, 19px);
   font-weight: 600;
-  color: var(--ink-bright);
-  letter-spacing: -0.01em;
-  margin: 0 0 8px;
+  color: var(--ink);
+  letter-spacing: 0;
+  margin: 0 0 6px;
 }
-.ov-item p { font-size: clamp(14px, 1.6vw, 17px); color: var(--ink-dim); max-width: 52ch; }
+.ov-item p { font-size: clamp(13px, 1.4vw, 15px); color: var(--ink-dim); max-width: 52ch; }
 .ov-item a, .ov-soft {
   font-family: var(--font-mono);
   font-size: 12.5px;
@@ -118,14 +127,18 @@
   font-weight: 500;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--ink-dim);
+  color: var(--accent);
 }
 
 @media (max-width: 860px) {
+  /* too small for the graph — hide the edges; each section gets its own
+     vertical accent line (on its content block) to keep the 3 sections clear */
+  .ov-wires { display: none; }
+
   .ov-row, .ov-row.reverse {
     grid-template-columns: 1fr;
-    gap: 18px;
-    padding: 7vh 0;
+    gap: 14px;
+    padding: 6vh 0;
   }
   .ov-row .ov-label, .ov-row.reverse .ov-label {
     grid-row: 1;
@@ -134,5 +147,13 @@
   }
   .ov-row.reverse .ov-content { grid-row: 2; }
   .ov-item { padding: 0 !important; }
-  .ov-wires { display: none; }   /* dots/wires only make sense on the wide layout */
+
+  /* the per-section rail */
+  .ov-row .ov-content, .ov-row.reverse .ov-content {
+    border-left: 2px solid var(--accent);
+    padding-left: clamp(16px, 5vw, 26px);
+    max-width: none;
+  }
+  /* let text use the full width in this layout (no blank right side) */
+  .ov-item p { max-width: none; }
 }

@@ -150,7 +150,9 @@ export default function Overview() {
   return (
     <section className="overview" id="overview">
       <div className="ov-inner">
-        <div className="section-label">Overview</div>
+        <div className="ov-head">
+          <h2>Overview</h2>
+        </div>
         {fields.map((f) => (
           <Field key={f.label} label={f.label} side={f.side} items={f.items} />
         ))}

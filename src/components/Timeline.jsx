@@ -118,9 +118,9 @@ function Year({ year, entries, side, index, headYRef, registry, myId }) {
         const el = ref.current;
         if (!el) return;
         const eb = el.getBoundingClientRect();
-        const ex = side === "right"
-          ? eb.left - rb.left - GAP
-          : eb.right - rb.left + GAP;
+        // attach to whichever entry edge faces the node — robust for any layout
+        const eL = eb.left - rb.left, eR = eb.right - rb.left;
+        const ex = Math.abs(eL - nx) <= Math.abs(eR - nx) ? eL - GAP : eR + GAP;
         const ey = eb.top - rb.top + eb.height / 2;
         lines.push({ x1: nx, y1: ny, x2: ex, y2: ey });
       });
@@ -303,8 +303,7 @@ export default function Timeline() {
   return (
     <section className="timeline-section" id="path">
       <div className="tl-head">
-        <div className="eyebrow">◦ the path so far</div>
-        <h2>The whole story.</h2>
+        <h2>Timeline</h2>
         <div className="tl-legend mono">
           {Object.entries(threads).map(([k, t]) => (
             <span key={k}><i style={{ background: t.color }} />{t.label}</span>

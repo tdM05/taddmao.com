@@ -11,7 +11,7 @@
   font-size: clamp(24px, 3.4vw, 38px);
   letter-spacing: -0.01em;
   color: var(--ink-bright);
-  margin-top: 10px;
+  margin-top: 0;
 }
 .tl-legend {
   display: flex;
@@ -264,26 +264,27 @@
 
 /* ---- mobile: single left spine, everything stacks ---- */
 @media (max-width: 760px) {
-  .tl-spine { left: 20px; }
+  /* spine sits under the year node; entries branch to the right, so wires
+     always cross the vertical progress bar (same as desktop, one-sided). */
+  .tl-spine { left: 37px; }            /* centre of the 74px year column */
   .tl-year-row,
   .tl-year-row.left,
   .tl-year-row.right {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    padding-left: 46px;
+    grid-template-columns: 74px 1fr;   /* [year on spine] [entries] */
+    gap: 0;
   }
   .tl-year-row.right .tl-year,
   .tl-year-row.left .tl-year {
     grid-column: 1;
-    justify-self: start;
-    margin-left: -46px;
+    justify-self: center;
   }
   .tl-year-row.right .tl-entries,
   .tl-year-row.left .tl-entries {
-    grid-column: 1;
+    grid-column: 2;
     align-items: flex-start;
     text-align: left;
+    padding-left: 24px;                /* room for the wire to cross the spine */
   }
   .tl-year-row.left .tl-entry { border-right: none; border-left: 2px solid rgb(var(--tc)); }
-  .tl-wires { display: none; }
+  /* wires stay visible on mobile */
 }
