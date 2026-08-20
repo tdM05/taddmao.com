@@ -2,8 +2,6 @@ import PageButtons from "../components/General/PageButtons.jsx";
 import "./Home.css";
 import GoToTop from "../GoToTop.jsx";
 import { MdEmail } from "react-icons/md";
-import { FaPhoneAlt } from "react-icons/fa";
-import ArtsPage from "./Art.jsx";
 
 export default function HomePage() {
   return (
@@ -22,15 +20,11 @@ function Introduction() {
       <div className="line"></div>
       <div className="tagText">Programmer, Musician, and Artist</div>
       <div className="contact">
-        <h3>Contact Information</h3>
+        <h3>Contact</h3>
 
         <p>
           <MdEmail className="icon" />
-          taddmao@gmail.com
-        </p>
-        <p>
-          <FaPhoneAlt className="icon2" />
-          250-640-9683
+          taddmao [at] gmail [dot] com
         </p>
       </div>
 

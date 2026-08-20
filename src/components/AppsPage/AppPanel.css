@@ -35,6 +35,13 @@ a {
 .leftP {
     text-align: left;
 }
+/* Cards without a video: let the text box fill the width and size to content. */
+.appFrameNoVideo {
+    height: auto;
+}
+.appFrameNoVideo .leftBox {
+    margin: 30px;
+}
 
 @media only screen and (max-width: 1016px) {
     .titleText {
