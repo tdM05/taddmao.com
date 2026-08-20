@@ -54,3 +54,21 @@
   text-decoration: none;
 }
 .hero-scroll:hover { color: var(--accent); text-decoration: none; }
+
+/* subtle CV link, top-right — findable without shouting */
+.hero-cv {
+  position: absolute;
+  top: 6vh;
+  right: var(--pad-x);
+  z-index: 3;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 14px;
+  text-decoration: none;
+  transition: color 0.2s, border-color 0.2s;
+}
+.hero-cv:hover { color: var(--ink-bright); border-color: var(--accent-deep); text-decoration: none; }

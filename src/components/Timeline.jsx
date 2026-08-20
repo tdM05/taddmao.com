@@ -4,37 +4,48 @@ import "./Timeline.css";
 
 const Model3D = lazy(() => import("./Model3D.jsx"));
 
-function ModelThumb({ model }) {
-  const [active, setActive] = useState(false);
-  if (!active)
-    return (
-      <button className="tl-thumb-model tl-thumb-idle" onClick={() => setActive(true)} aria-label="Load 3D model">
-        <span className="tl-thumb-cube" aria-hidden="true">◈</span>
-        <span className="tl-thumb-cta mono">view 3D</span>
-      </button>
-    );
+/* Fullscreen viewer overlay — opened from a gallery chip. Dismiss on
+   backdrop click, Escape, or scroll. Does NOT affect timeline layout. */
+function Lightbox({ item, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose();
+    const onScroll = () => onClose();
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("scroll", onScroll); };
+  }, [onClose]);
   return (
-    <div className="tl-thumb-model">
-      <Suspense fallback={<span className="tl-thumb-loading mono">3D…</span>}>
-        <Model3D name={model} />
-      </Suspense>
+    <div className="tl-lightbox" onClick={onClose}>
+      <button className="tl-lightbox-close mono" onClick={onClose} aria-label="Close">esc ✕</button>
+      <div className="tl-lightbox-stage" onClick={(e) => e.stopPropagation()}>
+        {item.type === "image" ? (
+          <img src={item.src} alt={item.caption || ""} />
+        ) : (
+          <div className="tl-lightbox-model">
+            <Suspense fallback={<span className="tl-thumb-loading mono">loading 3D…</span>}>
+              <Model3D name={item.model} />
+            </Suspense>
+          </div>
+        )}
+        {item.caption && <div className="tl-lightbox-cap mono">{item.caption}</div>}
+      </div>
     </div>
   );
 }
 
 function Gallery({ items }) {
+  const [open, setOpen] = useState(null);
   return (
     <div className="tl-gallery">
-      {items.map((g, i) => (
-        <figure className="tl-thumb" key={i}>
-          {g.type === "image" ? (
-            <img src={g.src} alt={g.caption || ""} loading="lazy" />
-          ) : (
-            <ModelThumb model={g.model} />
-          )}
-          {g.caption && <figcaption className="mono">{g.caption}</figcaption>}
-        </figure>
-      ))}
+      <div className="tl-chips">
+        {items.map((g, i) => (
+          <button key={i} className="tl-chip mono" onClick={() => setOpen(i)}>
+            <span className="tl-chip-ic" aria-hidden="true">{g.type === "model" ? "◈" : "▣"}</span>
+            {g.caption || (g.type === "model" ? "3D model" : "image")}
+          </button>
+        ))}
+      </div>
+      {open != null && <Lightbox item={items[open]} onClose={() => setOpen(null)} />}
     </div>
   );
 }
@@ -62,8 +73,6 @@ function Year({ year, entries, side, index, headYRef, registry, myId }) {
       if (!svg || !row) return;
       const wrapEl = row.parentElement;
       const rowRect = row.getBoundingClientRect();
-      const wrapTop = wrapEl.getBoundingClientRect().top;
-      const rowY = rowRect.top - wrapTop;
       const spine = wrapEl.querySelector(".tl-spine");
       if (!spine) return;
       const spineRect = spine.getBoundingClientRect();
@@ -80,7 +89,8 @@ function Year({ year, entries, side, index, headYRef, registry, myId }) {
         }
         edge.dataset.crossed = "0";
         list.push({
-          absY: rowY + (contactY ?? 0),
+          rowEl: row,               // absolute Y is computed live each frame
+          localY: contactY ?? 0,    // contact Y within the row
           color: threads[entries[i]?.thread]?.color || "150,205,225",
           flash,
         });
@@ -209,9 +219,15 @@ export default function Timeline() {
     if (!wrap || !fill) return;
     const START = [150, 205, 225]; // bar colour before the first contact
 
-    function allContacts() {
+    function allContacts(wrapTop) {
       const out = [];
-      for (const list of registryRef.current.values()) out.push(...list);
+      for (const list of registryRef.current.values()) {
+        for (const c of list) {
+          // absolute Y within the wrap, computed live (survives layout shifts)
+          const rowTop = c.rowEl.getBoundingClientRect().top - wrapTop;
+          out.push({ ...c, absY: rowTop + c.localY });
+        }
+      }
       out.sort((a, b) => a.absY - b.absY);
       return out;
     }
@@ -224,17 +240,18 @@ export default function Timeline() {
       fill.style.height = headY + "px";
       headYRef.current = headY;
 
-      const contacts = allContacts();
-      // fire flashes on crossings
+      const contacts = allContacts(r.top);
+      // fire flashes on crossings — forward when scrolling down, reversed when up
       for (const c of contacts) {
         if (!c.flash) continue;
         const crossed = headY >= c.absY;
         const was = c.flash.dataset.crossed === "1";
-        if (crossed && !was) {
+        if (crossed && !was) {                        // downward crossing
           c.flash.dataset.crossed = "1";
-          c.flash.classList.remove("go"); void c.flash.getBBox(); c.flash.classList.add("go");
-        } else if (!crossed && was) {
+          c.flash.classList.remove("go", "go-rev"); void c.flash.getBBox(); c.flash.classList.add("go");
+        } else if (!crossed && was) {                 // upward crossing
           c.flash.dataset.crossed = "0";
+          c.flash.classList.remove("go", "go-rev"); void c.flash.getBBox(); c.flash.classList.add("go-rev");
         }
       }
       // playhead colour: lerp from the last passed contact -> the next one,
@@ -299,7 +316,6 @@ export default function Timeline() {
         {timeline.map((y, i) => (
           <Year key={y.year} year={y.year} entries={y.entries} side={i % 2 === 0 ? "right" : "left"} index={i} headYRef={headYRef} registry={registryRef.current} myId={y.year} />
         ))}
-        <div className="tl-end" aria-hidden="true">∎</div>
       </div>
     </section>
   );
