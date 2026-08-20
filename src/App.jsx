@@ -1,28 +1,15 @@
-import AppsPage from "./pages/Apps";
-import HomePage from "./pages/Home";
-import MusicPage from "./pages/Music";
-import NoPage from "./pages/NoPage";
-import ArtsPage from "./pages/Art";
-import PageButtons from "./components/General/PageButtons.jsx";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import "./App.css";
+import Hero from "./components/Hero.jsx";
+import Overview from "./components/Overview.jsx";
+import Timeline from "./components/Timeline.jsx";
+import Footer from "./components/Footer.jsx";
 
-function App() {
+export default function App() {
   return (
-    <section>
-      <BrowserRouter>
-        <Routes>
-          <Route index element={<HomePage />}></Route>
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/art" element={<ArtsPage />} />
-          <Route path="/music" element={<MusicPage />} />
-          <Route path="/apps" element={<AppsPage />} />
-          <Route path="*" element={<NoPage />} />
-        </Routes>
-      </BrowserRouter>
-      {/* <HomePage></HomePage> */}
-    </section>
+    <>
+      <Hero />
+      <Overview />
+      <Timeline />
+      <Footer />
+    </>
   );
 }
-
-export default App;

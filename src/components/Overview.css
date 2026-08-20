@@ -1,0 +1,137 @@
+.overview {
+  /* ---- OVERVIEW COLOUR KNOBS (all hex; last 2 digits = opacity) ---- */
+  --ov-bg: #131417;      /* panel background (neutral dark) */
+  --ov-glow: #ffffff00;  /* corner wash: set an 8-digit hex like #8fb3c214 for a tint, or keep 00 for none */
+  padding: 14vh var(--pad-x);
+  background:
+    radial-gradient(120% 60% at 85% 0%, var(--ov-glow), transparent 55%),
+    var(--ov-bg);
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+}
+.ov-inner { max-width: 1180px; margin: 0 auto; }
+
+/* one row per field: content | label (or reversed) */
+.ov-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: clamp(50px, 9vw, 130px);   /* room for the wires */
+  padding: 8vh 0;
+  border-top: 1px solid var(--line-soft);
+}
+.ov-row:first-of-type { border-top: none; }
+.ov-row.reverse { grid-template-columns: auto 1fr; }
+
+/* SVG overlay carrying the connecting wires */
+.ov-wires {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.ov-wire {
+  stroke: rgba(var(--accent-line), 0.5);
+  stroke-width: 1.2;
+  animation: ov-pulse 3.2s ease-in-out infinite;
+}
+.ov-node {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 2px rgba(var(--accent-line), 0.35));
+  animation: ov-pulse 3.2s ease-in-out infinite;
+}
+@keyframes ov-pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 0.95; } }
+@media (prefers-reduced-motion: reduce) {
+  .ov-wire, .ov-node { animation: none; opacity: 0.7; }
+}
+
+/* content column */
+.ov-content { position: relative; z-index: 1; max-width: 640px; }
+.ov-multi { display: flex; flex-direction: column; gap: 34px; align-items: flex-start; }
+
+/* each item is its own box; dots/wires are drawn in the SVG overlay */
+.ov-item { position: relative; padding-right: 20px; }
+.ov-row.reverse .ov-item { padding-right: 0; padding-left: 20px; }
+
+.ov-item h3 {
+  font-size: clamp(22px, 2.6vw, 30px);
+  font-weight: 600;
+  color: var(--ink-bright);
+  letter-spacing: -0.01em;
+  margin: 0 0 8px;
+}
+.ov-item p { font-size: clamp(14px, 1.6vw, 17px); color: var(--ink-dim); max-width: 52ch; }
+.ov-item a, .ov-soft {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  display: inline-block;
+  margin-top: 12px;
+}
+.ov-item a { color: var(--ink-dim); border-bottom: 1px dashed var(--line); }
+.ov-item a:hover { color: var(--ink-bright); text-decoration: none; border-bottom-color: var(--ink-faint); }
+.ov-soft { color: var(--ink-faint); }
+
+/* media (per item) */
+.ov-media {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+/* per-item size: caps the media width (text stays readable width) */
+.ov-media-wrap { display: block; }
+.ov-size-lg .ov-media-wrap { max-width: 100%; }
+.ov-size-md .ov-media-wrap { max-width: 420px; }
+.ov-size-sm .ov-media-wrap { max-width: 250px; }
+.ov-media-img img { width: 100%; height: auto; display: block; }
+.ov-media-video { aspect-ratio: 16 / 9; background: #000; }
+.ov-media-video iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+/* interactive 3D model */
+.ov-media-model { aspect-ratio: 4 / 3; background: radial-gradient(120% 120% at 50% 30%, #14181f, #0a0b0e); position: relative; }
+.ov-model { width: 100%; height: 100%; cursor: grab; }
+.ov-model:active { cursor: grabbing; }
+.ov-model-hint,
+.ov-model-loading {
+  position: absolute;
+  bottom: 8px; left: 10px;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  pointer-events: none;
+}
+.ov-model-loading { top: 50%; left: 50%; transform: translate(-50%, -50%); bottom: auto; }
+
+/* field label */
+.ov-label {
+  justify-self: center;
+  position: relative;
+  z-index: 1;
+  padding: 0 20px;
+}
+.ov-label span {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+@media (max-width: 860px) {
+  .ov-row, .ov-row.reverse {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 7vh 0;
+  }
+  .ov-row .ov-label, .ov-row.reverse .ov-label {
+    grid-row: 1;
+    justify-self: start;
+    padding: 0;
+  }
+  .ov-row.reverse .ov-content { grid-row: 2; }
+  .ov-item { padding: 0 !important; }
+  .ov-wires { display: none; }   /* dots/wires only make sense on the wide layout */
+}

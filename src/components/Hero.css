@@ -1,0 +1,74 @@
+.hero {
+  position: relative;
+  height: 100vh;
+  min-height: 560px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.geo-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  cursor: crosshair;
+}
+
+.hero-txt {
+  position: relative;
+  z-index: 2;
+  padding: 0 var(--pad-x);
+  pointer-events: none;
+}
+.hero-txt * { pointer-events: auto; }
+
+.hero-txt h1 {
+  font-weight: 600;
+  font-size: clamp(52px, 10vw, 120px);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  margin-top: 14px;
+  color: var(--ink-bright);
+  text-shadow: 0 2px 30px var(--bg);
+}
+
+.hero-sub {
+  font-family: var(--font-mono);
+  font-weight: 300;
+  font-size: clamp(12px, 1.6vw, 16px);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+  margin-top: 22px;
+}
+
+.hero-scroll {
+  position: absolute;
+  bottom: 5vh;
+  left: var(--pad-x);
+  z-index: 2;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+  text-decoration: none;
+}
+.hero-scroll:hover { color: var(--accent); text-decoration: none; }
+
+/* subtle CV link, top-right — findable without shouting */
+.hero-cv {
+  position: absolute;
+  top: 6vh;
+  right: var(--pad-x);
+  z-index: 3;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 14px;
+  text-decoration: none;
+  transition: color 0.2s, border-color 0.2s;
+}
+.hero-cv:hover { color: var(--ink-bright); border-color: var(--accent-deep); text-decoration: none; }

@@ -1,0 +1,288 @@
+.timeline-section { padding: 8vh 0 4vh; }
+
+.tl-head {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 4vh var(--pad-x) 2vh;
+}
+.tl-head h2 {
+  font-weight: 600;
+  font-size: clamp(24px, 3.4vw, 38px);
+  letter-spacing: -0.01em;
+  color: var(--ink-bright);
+  margin-top: 10px;
+}
+.tl-legend {
+  display: flex;
+  gap: 20px;
+  margin-top: 18px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.tl-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.tl-legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+/* ---- spine ---- */
+.tl {
+  position: relative;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 3vh var(--pad-x) 12vh;
+}
+.tl-spine {
+  position: absolute;
+  left: 50%;
+  top: 0; bottom: 0;
+  width: 2px;
+  transform: translateX(-1px);
+  background: linear-gradient(var(--line-soft), var(--line) 12%, var(--line) 88%, var(--line-soft));
+  z-index: 0;               /* behind the year nodes */
+}
+/* progress bar / playhead — a single fixed colour, distinct from the
+   thread colours (which stay blue/green/sand on the edges). */
+.tl {
+  --bar: 143, 166, 179;   /* fallback; live colour set per-frame from JS */
+}
+.tl-fill {
+  position: absolute;
+  left: 0; top: 0; width: 100%; height: 0;
+  background: linear-gradient(rgba(var(--bar), 0.25), rgb(var(--bar)));
+  box-shadow: 0 0 6px rgba(var(--bar), 0.3);
+}
+/* playhead glow at the leading tip — softer, subtler */
+.tl-fill::after {
+  content: "";
+  position: absolute;
+  left: 50%; bottom: -6px;
+  transform: translateX(-50%);
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--bar), 0.8), rgba(var(--bar), 0) 70%);
+  filter: blur(2px);
+  opacity: 0.7;
+}
+
+/* ---- one year row ---- */
+.tl-year-row {
+  position: relative;
+  display: grid;
+  align-items: center;
+  gap: clamp(40px, 7vw, 90px);
+  padding: 4.5vh 0;
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.tl-year-row.in { opacity: 1; transform: none; }
+/* side = which side the ENTRIES sit on. Year node hugs the spine (center). */
+.tl-year-row.right { grid-template-columns: 1fr 1fr; }  /* [year|entries]  entries on right */
+.tl-year-row.left  { grid-template-columns: 1fr 1fr; }  /* [entries|year]  entries on left */
+
+/* year node — sits on the spine (center column edge) */
+.tl-year {
+  justify-self: center;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--ink-dim);            /* year is neutral — no special colour */
+  background: var(--bg);
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  position: relative;
+  z-index: 2;
+  white-space: nowrap;
+  /* bg halo blends the spine/fill smoothly into the node edge */
+  box-shadow: 0 0 0 6px var(--bg), 0 0 18px 6px var(--bg);
+}
+.tl-year-row.right .tl-year { grid-column: 1; justify-self: end; }
+.tl-year-row.left  .tl-year { grid-column: 2; justify-self: start; }
+
+/* entries column */
+.tl-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+.tl-year-row.right .tl-entries { grid-column: 2; }
+.tl-year-row.left  .tl-entries { grid-column: 1; align-items: flex-end; text-align: right; }
+
+.tl-entry {
+  position: relative;
+  padding: 12px 16px;
+  border: 1px solid var(--line-soft);
+  border-left: 2px solid rgb(var(--tc));
+  border-radius: 8px;
+  background: rgba(var(--tc), 0.04);
+  max-width: 46ch;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.tl-year-row.left .tl-entry { border-left: none; border-right: 2px solid rgb(var(--tc)); }
+.tl-year-row.in .tl-entry { opacity: 1; transform: none; }
+
+.tl-when {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(var(--tc));
+  margin-bottom: 3px;
+}
+.tl-text { font-size: 14.5px; color: var(--ink); }
+
+/* gallery: selector chips + an expanding viewer panel */
+.tl-gallery { margin-top: 14px; }
+.tl-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.tl-year-row.left .tl-chips { justify-content: flex-end; }
+.tl-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.tl-chip:hover { color: var(--ink-bright); border-color: var(--accent-deep); }
+.tl-chip.on { color: var(--bg); background: var(--accent); border-color: var(--accent); }
+.tl-chip-ic { font-size: 13px; }
+
+/* fullscreen lightbox (does not affect timeline layout) */
+.tl-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6vh 6vw;
+  background: rgba(6, 7, 9, 0.86);
+  backdrop-filter: blur(6px);
+  animation: tl-lb-fade 0.25s ease;
+}
+@keyframes tl-lb-fade { from { opacity: 0; } to { opacity: 1; } }
+.tl-lightbox-close {
+  position: absolute;
+  top: 24px; right: 28px;
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--ink-dim);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.tl-lightbox-close:hover { color: var(--ink-bright); border-color: var(--accent-deep); }
+.tl-lightbox-stage {
+  max-width: min(900px, 90vw);
+  max-height: 86vh;
+  animation: tl-lb-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes tl-lb-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: none; } }
+.tl-lightbox-stage img {
+  display: block;
+  max-width: 100%;
+  max-height: 82vh;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+.tl-lightbox-model {
+  position: relative;
+  width: min(80vw, 640px);
+  height: min(70vh, 640px);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: radial-gradient(120% 120% at 50% 25%, #14181f, #0a0b0e);
+  cursor: grab;
+}
+.tl-lightbox-model:active { cursor: grabbing; }
+.tl-model-hint {
+  position: absolute; bottom: 10px; left: 12px;
+  font-size: 11px; color: var(--ink-faint); pointer-events: none;
+}
+.tl-thumb-loading {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: var(--ink-faint);
+}
+.tl-lightbox-cap {
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-dim);
+  margin-top: 12px;
+}
+
+/* wires overlay */
+.tl-wires {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+}
+/* contact flash — a bright pulse travels along the edge, once, on crossing.
+   CSS-driven so it's independent of scroll speed. */
+.tl-flash {
+  opacity: 0;
+  filter:
+    drop-shadow(0 0 3px rgba(var(--flash-rgb), 0.85))
+    drop-shadow(0 0 6px rgba(var(--flash-rgb), 0.4));
+}
+.tl-flash.go {
+  animation: tl-flash-travel 0.95s ease-out;
+}
+/* both directions emanate FROM the contact point (node end) outward, so the
+   pulse is at the intersection instantly on crossing — no perceived lag. */
+.tl-flash.go-rev {
+  animation: tl-flash-travel 0.95s ease-out;
+}
+@keyframes tl-flash-travel {
+  0%   { opacity: 0;   stroke-dashoffset: 1; }
+  15%  { opacity: 1; }
+  100% { opacity: 0;   stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .tl-flash { display: none; } }
+
+.tl-end {
+  text-align: center;
+  color: var(--accent-deep);
+  font-size: 22px;
+  padding: 3vh 0 2vh;
+}
+
+/* ---- mobile: single left spine, everything stacks ---- */
+@media (max-width: 760px) {
+  .tl-spine { left: 20px; }
+  .tl-year-row,
+  .tl-year-row.left,
+  .tl-year-row.right {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding-left: 46px;
+  }
+  .tl-year-row.right .tl-year,
+  .tl-year-row.left .tl-year {
+    grid-column: 1;
+    justify-self: start;
+    margin-left: -46px;
+  }
+  .tl-year-row.right .tl-entries,
+  .tl-year-row.left .tl-entries {
+    grid-column: 1;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .tl-year-row.left .tl-entry { border-right: none; border-left: 2px solid rgb(var(--tc)); }
+  .tl-wires { display: none; }
+}

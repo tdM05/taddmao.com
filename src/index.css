@@ -1,0 +1,74 @@
+/* ============================================================
+   taddmao.com — global styles & design tokens
+   Palette/type locked from the approved hero (concept 21) + timeline.
+   ============================================================ */
+:root {
+  /* surface — a touch warmer/softer than pure black */
+  --bg: #0c0d10;
+  --bg-soft: #121519;
+  --line: #262d34;
+  --line-soft: #1d2329;
+
+  /* ink */
+  --ink: #dfe4ea;
+  --ink-bright: #eef1f5;
+  --ink-dim: #9aa5ad;
+  --ink-faint: #64717a;
+
+  /* ★ TRUE GLOBAL ACCENT — one knob. Change --accent (hex), then set
+     --accent-line to the SAME colour as "r, g, b" (used by rgba glows). */
+  --accent: #a7858d;
+  --accent-deep: #7d5f66;
+  --accent-line: 167, 133, 141;
+
+  /* geometry hero dots/lines — "r, g, b" (used with rgba) */
+  --geo-line: 130, 150, 165;
+  --geo-point: 175, 195, 208;
+  --geo-arc: 105, 125, 138;
+
+  --maxw: 960px;
+  --pad-x: 7vw;
+
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: var(--ink-dim); text-decoration: none; }
+a:hover { color: var(--ink-bright); text-decoration: underline; }
+
+.mono { font-family: var(--font-mono); }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}

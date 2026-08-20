@@ -1,0 +1,15 @@
+<!DOCTYPE html><html><head><meta charset=UTF-8><title>favicon options</title>
+<style>body{background:#16181c;color:#cfd6de;font-family:system-ui,sans-serif;padding:40px}
+.row{display:flex;gap:40px;flex-wrap:wrap;margin-top:20px}
+.opt{text-align:center}
+.big{width:96px;height:96px;border-radius:22px;display:block}
+.sm{width:16px;height:16px;image-rendering:auto;margin-top:10px}
+.lbl{margin-top:8px;font-size:12px;color:#8a94a0;font-family:monospace}
+h2{font-weight:500}</style></head><body>
+<h2>Favicon options — big (96px) + actual 16px size</h2>
+<div class=row id=r></div>
+<script>
+const names=[["fav-turnstile","1 · turnstile ⊢"],["fav-qed","2 · QED ∎"],["fav-tm","3 · monogram tm"],["fav-node","4 · geometry node"],["fav-therefore","5 · therefore ∴"]];
+document.getElementById('r').innerHTML=names.map(([f,l])=>
+`<div class=opt><img class=big src="${f}.svg"><br><img class=sm src="${f}.svg"><div class=lbl>${l}</div></div>`).join('');
+</script></body></html>
