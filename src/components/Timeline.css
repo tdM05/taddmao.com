@@ -253,7 +253,7 @@
   15%  { opacity: 1; }
   100% { opacity: 0;   stroke-dashoffset: 0; }
 }
-@media (prefers-reduced-motion: reduce) { .tl-flash { display: none; } }
+/* flash is brief, scroll-driven feedback (not ambient) — kept under reduce-motion */
 
 .tl-end {
   text-align: center;

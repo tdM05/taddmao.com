@@ -62,12 +62,16 @@ export default function GeometryField() {
 
     function step(now) {
       x.clearRect(0, 0, W, H);
-      for (const p of pts) {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0 || p.x > W) p.vx *= -1;
-        if (p.y < 0 || p.y > H) p.vy *= -1;
-        p.x = Math.max(0, Math.min(W, p.x));
-        p.y = Math.max(0, Math.min(H, p.y));
+      // ambient drift honours reduce-motion (frozen), but the loop keeps running
+      // so cursor interaction / construction still respond to the user.
+      if (!reduce) {
+        for (const p of pts) {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0 || p.x > W) p.vx *= -1;
+          if (p.y < 0 || p.y > H) p.vy *= -1;
+          p.x = Math.max(0, Math.min(W, p.x));
+          p.y = Math.max(0, Math.min(H, p.y));
+        }
       }
       x.lineWidth = 1;
       for (let i = 0; i < N; i++)
@@ -124,23 +128,9 @@ export default function GeometryField() {
       raf = requestAnimationFrame(step);
     }
 
-    function staticFrame() {
-      for (let i = 0; i < N; i++)
-        for (let j = i + 1; j < N; j++) {
-          const d = dist(pts[i], pts[j]);
-          if (d < LINK) {
-            x.strokeStyle = `rgba(${C_LINE},${(1 - d / LINK) * 0.16})`;
-            x.beginPath(); x.moveTo(pts[i].x, pts[i].y); x.lineTo(pts[j].x, pts[j].y); x.stroke();
-          }
-        }
-      for (const p of pts) {
-        x.fillStyle = `rgba(${C_PT},0.7)`;
-        x.beginPath(); x.arc(p.x, p.y, 1.6, 0, Math.PI * 2); x.fill();
-      }
-    }
-
-    if (reduce) staticFrame();
-    else raf = requestAnimationFrame(step);
+    // always run the loop — cursor interaction works regardless of reduce-motion;
+    // only the ambient drift is frozen inside step() when `reduce` is set.
+    raf = requestAnimationFrame(step);
 
     return () => {
       cancelAnimationFrame(raf);

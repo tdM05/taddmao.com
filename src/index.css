@@ -71,5 +71,8 @@ a:hover { color: var(--ink-bright); text-decoration: underline; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  /* Note: we intentionally do NOT globally kill all animation here.
+     Ambient/looping motion is disabled per-component (e.g. the hero drift,
+     the overview pulse). User-driven feedback (timeline flashes on scroll,
+     hover transitions) stays enabled so the site feels responsive, not dead. */
 }
