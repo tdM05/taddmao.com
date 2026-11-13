@@ -43,6 +43,14 @@ export const fields = [
         href: null,
         linkText: "with Prof. Xujie Si",
       },
+      {
+        title: "CRA Outstanding Undergraduate Researcher — Nominee",
+        desc:
+          "Nominated by the University of Toronto's Department of Computer Science (2026), which puts forward only a few of its top undergraduate researchers each year.",
+        media: null,
+        href: null,
+        linkText: null,
+      },
     ],
   },
   {
