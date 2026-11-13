@@ -111,7 +111,7 @@ export const timeline = [
     year: "Now",
     entries: [
       { thread: "research", text: "Extending our faithfulness methods to help check recent AI math breakthroughs, such as OpenAI's Navier-Stokes result." },
-      { thread: "research", text: "Applying to direct-entry PhD programs." },
+      { thread: "research", text: "Applying to graduate school." },
     ],
   },
 ];
