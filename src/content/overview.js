@@ -11,7 +11,7 @@ export const fields = [
     label: "RESEARCH",
     side: "right",
     intro:
-      "How can we know an AI did exactly what we wanted, not approximately but precisely? I build verification systems that lean on formal guarantees and human understanding, rather than trusting one AI to check another. My work starts in mathematics, where faithfulness can be made concrete.",
+      "How can we know an AI did exactly what we wanted, not approximately but precisely? I build verification systems that lean on formal guarantees and human understanding, rather than trusting one AI to check another.",
     items: [
       {
         title: "First-author paper on AI verification",
