@@ -32,7 +32,7 @@ export const fields = [
       {
         title: "Agent Interest and Capability: When Does Decentralized Value Learning Scale?",
         desc:
-          "Under review at AAMAS 2027. We ask when can many agents each learn their own value function and still scale and give conditions for when this works . Advised by Prof. Peter Marbach.",
+          "Under review at AAMAS 2027. We ask when many agents can each learn their own value function and still scale, and give conditions for when this works. Advised by Prof. Peter Marbach.",
         media: null,
         href: "https://taddmao.com/aamas2027.pdf",
         linkText: "read the paper",
