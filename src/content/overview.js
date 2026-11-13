@@ -20,6 +20,22 @@ export const fields = [
         linkText: "read the preprint",
       },
       {
+        title: "Co-author paper on measuring faithfulness",
+        desc:
+          "Under review at ICLR 2027 — a benchmark and method for judging whether an AI's formal translation of math actually says what the original words meant, and pinpointing where it goes wrong. Advised by Ziyang Li (Johns Hopkins) & Xujie Si (Toronto).",
+        media: null,
+        href: "https://arxiv.org/abs/2610.18498",
+        linkText: "read the preprint",
+      },
+      {
+        title: "Co-first-author paper on multi-agent learning",
+        desc:
+          "Under review at AAMAS 2027 — when can many agents each learn their own value function and still scale? We give conditions for when this works. Advised by Prof. Peter Marbach.",
+        media: null,
+        href: "https://taddmao.com/aamas2027.pdf",
+        linkText: "read the paper",
+      },
+      {
         title: "NSERC Undergraduate Student Research Award",
         desc:
           "A competitive national award funding a summer of full-time research (2026).",

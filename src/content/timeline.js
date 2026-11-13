@@ -101,6 +101,7 @@ export const timeline = [
     year: "2026",
     entries: [
       { thread: "research", when: "summer", text: "NSERC award with Prof. Xujie Si; submitted a first-author paper; met collaborators at JHU & UPenn." },
+      { thread: "research", when: "fall", text: "Submitted a co-first-author paper to AAMAS 2027 (multi-agent RL) and a co-author paper to ICLR 2027 (faithfulness evaluation)." },
       { thread: "research", when: "fall", text: "Merged a lemma into Mathlib; TA for MAT309 (Mathematical Logic)." },
     ],
   },
