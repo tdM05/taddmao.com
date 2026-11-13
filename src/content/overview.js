@@ -56,7 +56,7 @@ export const fields = [
       {
         title: "CRA Outstanding Undergraduate Researcher — Nominee",
         desc:
-          "Nominated by the University of Toronto's Department of Computer Science (2026), which puts forward only a few of its top undergraduate researchers each year.",
+          "Nominated by the University of Toronto's Department of Computer Science (2026).",
         media: null,
         href: null,
         linkText: null,
