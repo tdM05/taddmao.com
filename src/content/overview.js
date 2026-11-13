@@ -14,25 +14,25 @@ export const fields = [
       "How can we know an AI did exactly what we wanted, not approximately but precisely? I build verification systems that lean on formal guarantees and human understanding, rather than trusting one AI to check another.",
     items: [
       {
-        title: "First-author paper on AI verification",
+        title: "Does the Proof Prove It That Way? Faithful Formalization of Elements Proofs",
         desc:
-          "Under review at AAAI-27 — a way to check that a computer-verified proof really matches the human idea behind it. Advised by Ziyang Li (Johns Hopkins) & Xujie Si (Toronto).",
+          "Under review at AAAI-27. We develop a way to check that a computer-verified proof really matches the human idea behind it. Advised by Ziyang Li (Johns Hopkins) & Xujie Si (Toronto).",
         media: null,
         href: "https://arxiv.org/abs/2608.15432",
         linkText: "read the preprint",
       },
       {
-        title: "Co-author paper on measuring faithfulness",
+        title: "Aligning Faithfulness for Theory-Scale Autoformalization",
         desc:
-          "Under review at ICLR 2027 — a benchmark and method for judging whether an AI's formal translation of math actually says what the original words meant, and pinpointing where it goes wrong. Advised by Ziyang Li (Johns Hopkins) & Xujie Si (Toronto).",
+          "Under review at ICLR 2027. We created a benchmark and method for judging whether an AI's formal translation of math actually says what the original words meant, and pinpointing where it goes wrong. Advised by Ziyang Li (Johns Hopkins) & Xujie Si (Toronto).",
         media: null,
         href: "https://arxiv.org/abs/2610.18498",
         linkText: "read the preprint",
       },
       {
-        title: "Co-first-author paper on multi-agent learning",
+        title: "Agent Interest and Capability: When Does Decentralized Value Learning Scale?",
         desc:
-          "Under review at AAMAS 2027 — when can many agents each learn their own value function and still scale? We give conditions for when this works. Advised by Prof. Peter Marbach.",
+          "Under review at AAMAS 2027. We ask when can many agents each learn their own value function and still scale and give conditions for when this works . Advised by Prof. Peter Marbach.",
         media: null,
         href: "https://taddmao.com/aamas2027.pdf",
         linkText: "read the paper",
@@ -40,7 +40,7 @@ export const fields = [
       {
         title: "Merged a lemma into Mathlib",
         desc:
-          "Contributed Int.closure_eq_zmultiples to Mathlib, the core formal-mathematics library for Lean 4, proving it independently and refining it through community review.",
+          "Contributed Int.closure_eq_zmultiples to Mathlib, the core formal-mathematics library for Lean 4.",
         media: null,
         href: "https://github.com/leanprover-community/mathlib4/pull/39435",
         linkText: "see the PR",
