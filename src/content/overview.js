@@ -10,6 +10,8 @@ export const fields = [
   {
     label: "RESEARCH",
     side: "right",
+    intro:
+      "How can we know an AI did exactly what we wanted, not approximately but precisely? I build verification systems that lean on formal guarantees and human understanding, rather than trusting one AI to check another. My work starts in mathematics, where faithfulness can be made concrete.",
     items: [
       {
         title: "First-author paper on AI verification",
@@ -34,6 +36,14 @@ export const fields = [
         media: null,
         href: "https://taddmao.com/aamas2027.pdf",
         linkText: "read the paper",
+      },
+      {
+        title: "Merged a lemma into Mathlib",
+        desc:
+          "Contributed Int.closure_eq_zmultiples to Mathlib, the core formal-mathematics library for Lean 4, proving it independently and refining it through community review.",
+        media: null,
+        href: "https://github.com/leanprover-community/mathlib4/pull/39435",
+        linkText: "see the PR",
       },
       {
         title: "NSERC Undergraduate Student Research Award",

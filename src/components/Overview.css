@@ -60,6 +60,16 @@
 .ov-content { position: relative; z-index: 1; max-width: 640px; }
 .ov-multi { display: flex; flex-direction: column; gap: 34px; align-items: flex-start; }
 
+/* field lead-in (e.g. the research statement above the RESEARCH cards) */
+.ov-field-intro {
+  font-family: var(--font-sans);
+  font-size: clamp(14px, 1.5vw, 16.5px);
+  line-height: 1.6;
+  color: var(--ink);
+  max-width: 56ch;
+  margin: 0;
+}
+
 /* each item is its own box; dots/wires are drawn in the SVG overlay */
 .ov-item { position: relative; padding-right: 20px; }
 .ov-row.reverse .ov-item { padding-right: 0; padding-left: 20px; }

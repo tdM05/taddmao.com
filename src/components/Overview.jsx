@@ -61,7 +61,7 @@ function Item({ item, itemRef, anchorRef }) {
  * inner edge) and a label (with a dot). Measures the real DOM boxes and draws
  * a wire from the label dot to every item dot. Works for any item count.
  */
-function Field({ label, side, items }) {
+function Field({ label, side, items, intro }) {
   const rowRef = useRef(null);
   const labelRef = useRef(null);
   // stable ref arrays sized to items: itemRefs = the box, anchorRefs = media (if any)
@@ -111,6 +111,7 @@ function Field({ label, side, items }) {
 
   const content = (
     <div className={`ov-content ${items.length > 1 ? "ov-multi" : ""}`}>
+      {intro && <p className="ov-field-intro">{intro}</p>}
       {items.map((it, i) => (
         <Item item={it} key={i} itemRef={itemRefs.current[i]} anchorRef={anchorRefs.current[i]} />
       ))}
@@ -154,7 +155,7 @@ export default function Overview() {
           <h2>Overview</h2>
         </div>
         {fields.map((f) => (
-          <Field key={f.label} label={f.label} side={f.side} items={f.items} />
+          <Field key={f.label} label={f.label} side={f.side} items={f.items} intro={f.intro} />
         ))}
       </div>
     </section>

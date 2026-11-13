@@ -103,13 +103,15 @@ export const timeline = [
       { thread: "research", when: "summer", text: "NSERC award with Prof. Xujie Si and met collaborators at JHU & UPenn. With this group, I submitted my first time paper (to AAAI-27)  ." },
       { thread: "research", when: "summer", text: "Merged a lemma into Mathlib." },
       { thread: "research", when: "fall", text: "Submitted a co-first-author paper to AAMAS 2027 (multi-agent RL) and a co-author paper to ICLR 2027 (faithfulness evaluation)." },
-      { thread: "research", when: "fall", text: "TA for MAT309 (Mathematical Logic)." },
+      { thread: "research", when: "fall", text: "Invited by Prof. Homayouni to TA MAT309 (Mathematical Logic) after taking it; now teaching 100+ students across two tutorials." },
+      { thread: "research", text: "Cumulative GPA 3.99/4.00, including 100% in Mathematical Logic." },
     ],
   },
   {
     year: "Now",
     entries: [
-      { thread: "research", text: "Preparing further paper submissions and applying for direct-entry PhD programs." },
+      { thread: "research", text: "Extending our faithfulness methods to help check recent AI math breakthroughs, such as OpenAI's Navier-Stokes result." },
+      { thread: "research", text: "Applying to direct-entry PhD programs." },
     ],
   },
 ];
