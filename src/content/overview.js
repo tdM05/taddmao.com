@@ -11,12 +11,12 @@ export const fields = [
     label: "RESEARCH",
     side: "right",
     intro:
-      "How can we know an AI did exactly what we wanted, not approximately but precisely? I build verification systems that lean on formal guarantees and human understanding, rather than trusting one AI to check another.",
+      "My primary interest is AI verification research with a formal methods approach. Other than research, I play piano, violin, and like to do art.",
     items: [
       {
         title: "Does the Proof Prove It That Way? Faithful Formalization of Elements Proofs",
         desc:
-          "Under review at AAAI-27. We develop a way to check that a computer-verified proof really matches the human idea behind it. Advised by Ziyang Li (Johns Hopkins) & Xujie Si (Toronto).",
+          "Under review at AAAI-27. Developed a methodology to formalize mathematical proofs in Lean, focusing on Euclidean geometry. Advised by Ziyang Li (Johns Hopkins) & Xujie Si (Toronto).",
         media: null,
         href: "https://arxiv.org/abs/2608.15432",
         linkText: "read the preprint",
@@ -35,7 +35,7 @@ export const fields = [
           "Under review at AAMAS 2027. We ask when many agents can each learn their own value function and still scale, and give conditions for when this works. Advised by Prof. Peter Marbach.",
         media: null,
         href: "https://taddmao.com/aamas2027.pdf",
-        linkText: "read the paper",
+        linkText: "read the preprint",
       },
       {
         title: "Merged a lemma into Mathlib",
