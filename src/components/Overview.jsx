@@ -1,4 +1,5 @@
 import { lazy, Suspense, useLayoutEffect, useRef, useState } from "react";
+import { ClientOnly } from "vite-react-ssg/single-page";
 import { fields } from "../content/overview.js";
 import "./Overview.css";
 
@@ -29,9 +30,13 @@ function Media({ media, title }) {
   if (media.type === "model")
     return (
       <div className="ov-media ov-media-model">
-        <Suspense fallback={<div className="ov-model-loading mono">loading 3D…</div>}>
-          <Model3D name={media.model} />
-        </Suspense>
+        <ClientOnly fallback={<div className="ov-model-loading mono">loading 3D…</div>}>
+          {() => (
+            <Suspense fallback={<div className="ov-model-loading mono">loading 3D…</div>}>
+              <Model3D name={media.model} />
+            </Suspense>
+          )}
+        </ClientOnly>
       </div>
     );
   return null;
@@ -111,7 +116,19 @@ function Field({ label, side, items, intro }) {
 
   const content = (
     <div className={`ov-content ${items.length > 1 ? "ov-multi" : ""}`}>
-      {intro && <p className="ov-field-intro">{intro}</p>}
+      {intro && (
+        <div className="ov-intro">
+          <img
+            className="ov-avatar"
+            src="/tadd-avatar.webp"
+            alt="Tadd Mao"
+            width="400"
+            height="400"
+            loading="lazy"
+          />
+          <p className="ov-field-intro">{intro}</p>
+        </div>
+      )}
       {items.map((it, i) => (
         <Item item={it} key={i} itemRef={itemRefs.current[i]} anchorRef={anchorRefs.current[i]} />
       ))}

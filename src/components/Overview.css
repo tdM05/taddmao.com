@@ -167,3 +167,22 @@
   /* let text use the full width in this layout (no blank right side) */
   .ov-item p { max-width: none; }
 }
+
+/* ── Bio intro with avatar ──────────────────────────────────────────── */
+.ov-intro {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2vw, 26px);
+}
+.ov-avatar {
+  flex: 0 0 auto;
+  width: clamp(78px, 9vw, 106px);
+  height: clamp(78px, 9vw, 106px);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  box-shadow: 0 0 0 5px rgba(var(--accent-line), 0.08);
+}
+@media (max-width: 760px) {
+  .ov-avatar { width: 72px; height: 72px; }
+}
