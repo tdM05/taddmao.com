@@ -6,6 +6,10 @@ import "./Overview.css";
 // 3D viewer is heavy (three.js) — load it only when a model item needs it.
 const Model3D = lazy(() => import("./Model3D.jsx"));
 
+// Flip to `true` to show the circular headshot next to the bio intro.
+// (Image lives at public/tadd-avatar.webp; styles are .ov-intro / .ov-avatar.)
+const SHOW_AVATAR = false;
+
 function Media({ media, title }) {
   if (!media) return null;
   if (media.type === "image")
@@ -116,19 +120,22 @@ function Field({ label, side, items, intro }) {
 
   const content = (
     <div className={`ov-content ${items.length > 1 ? "ov-multi" : ""}`}>
-      {intro && (
-        <div className="ov-intro">
-          <img
-            className="ov-avatar"
-            src="/tadd-avatar.webp"
-            alt="Tadd Mao"
-            width="400"
-            height="400"
-            loading="lazy"
-          />
+      {intro &&
+        (SHOW_AVATAR ? (
+          <div className="ov-intro">
+            <img
+              className="ov-avatar"
+              src="/tadd-avatar.webp"
+              alt="Tadd Mao"
+              width="400"
+              height="400"
+              loading="lazy"
+            />
+            <p className="ov-field-intro">{intro}</p>
+          </div>
+        ) : (
           <p className="ov-field-intro">{intro}</p>
-        </div>
-      )}
+        ))}
       {items.map((it, i) => (
         <Item item={it} key={i} itemRef={itemRefs.current[i]} anchorRef={anchorRefs.current[i]} />
       ))}
