@@ -1,10 +1,8 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { ViteReactSSG } from 'vite-react-ssg/single-page'
 import App from './App.jsx'
 import './index.css'
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+// Static-generate the page to real HTML at build time (so crawlers / link
+// previews / AI assistants can read the content without running JS), then
+// hydrate the identical interactive React app in the browser.
+export const createRoot = ViteReactSSG(<App />)
